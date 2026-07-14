@@ -443,6 +443,49 @@
     50% { opacity: .3; }
   }
 
+  /* ===== AI PANEL ===== */
+  .ai-panel {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    padding: 20px 22px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+  .ai-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .ai-status {
+    font-size: .8rem;
+    color: var(--text2);
+  }
+  .ai-result {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: .85rem;
+    line-height: 1.8;
+    max-height: 600px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .ai-result .stock-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .ai-result .stock-card h4 {
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     .dashboard { grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -515,6 +558,7 @@
     <div class="header-right">
       <span class="header-user" id="headerUser" onclick="switchUser()" title="点击切换用户"></span>
       <button class="btn btn-sm btn-outline" onclick="showUserManager()" title="管理用户">👥</button>
+      <button class="btn btn-sm btn-ghost" onclick="toggleAIPanel()" title="AI选股分析" style="color:#fbbf24;">🤖 AI</button>
       <span class="refresh-info">🕐 更新于 <strong id="updateTime">--</strong></span>
       <span id="statusBadge" class="badge badge-stale">未连接</span>
       <button class="btn btn-sm btn-ghost" onclick="manualRefresh()" title="手动刷新">🔄 刷新</button>
@@ -623,6 +667,45 @@
     </div>
   </div>
 
+</div>
+
+<!-- ===== AI ANALYSIS PANEL ===== -->
+<div class="ai-panel" id="aiPanel" style="display:none;">
+  <div class="section-title">
+    🤖 AI选股分析
+    <button class="btn btn-sm btn-outline" onclick="showPromptEditor()" style="margin-left:auto;">✏️ 编辑提示词</button>
+  </div>
+  <div class="ai-content">
+    <div class="ai-controls">
+      <button class="btn btn-blue" id="aiStartBtn" onclick="startAIAnalysis()">🚀 开始分析</button>
+      <span class="ai-status" id="aiStatus"></span>
+    </div>
+    <div class="ai-result" id="aiResult">
+      <div class="empty-state"><div class="icon">🤖</div><p>点击"开始分析"调用DeepSeek AI</p><p style="font-size:.78rem;">分析结果将保存在你的账户中</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROMPT EDITOR MODAL ===== -->
+<div class="modal-overlay" id="promptModal" style="display:none;">
+  <div class="modal" style="max-width:700px;max-height:90vh;overflow-y:auto;">
+    <button class="modal-close" onclick="closePromptEditor()">✕</button>
+    <h3>✏️ 编辑AI提示词</h3>
+    <div style="color:var(--text2);font-size:.75rem;margin-bottom:8px;">修改后所有用户共用新提示词</div>
+    <div class="form-group">
+      <label>📋 筛选提示词（第一步：海选股票）</label>
+      <textarea id="editScreenPrompt" rows="8" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;resize:vertical;"></textarea>
+    </div>
+    <div class="form-group">
+      <label>🔍 分析提示词（第二步：深度研判每只股票）</label>
+      <textarea id="editAnalyzePrompt" rows="8" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;resize:vertical;"></textarea>
+    </div>
+    <div id="promptModalError" style="color:var(--red);font-size:.75rem;min-height:18px;"></div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-blue" onclick="savePrompts()" style="flex:1;justify-content:center;">💾 保存提示词</button>
+      <button class="btn btn-outline" onclick="closePromptEditor()" style="flex:1;justify-content:center;">取消</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== FOOTER ===== -->
@@ -804,6 +887,8 @@ async function doLogin() {
   fetchAllPrices();
   startAutoRefresh();
   checkDailySnapshot();
+  loadConfig();
+  loadAIResult();
 
   toast(`✅ 欢迎，${user}`);
 }
@@ -1696,6 +1781,242 @@ setInterval(() => {
     renderAll();
   }
 }, 3600000);
+
+// ===== AI 分析 =====
+let aiConfig = null;  // {deepseekApiKey, screenPrompt, analyzePrompt}
+
+async function loadConfig() {
+  try {
+    const result = await githubGet('config.json');
+    if (result) {
+      aiConfig = result.content;
+      return aiConfig;
+    }
+  } catch(e) {
+    console.error('加载配置失败', e);
+  }
+  return null;
+}
+
+async function saveConfigToGH() {
+  if (!aiConfig) return;
+  try {
+    const result = await githubGet('config.json');
+    await githubPut('config.json', aiConfig, result ? result.sha : null, '更新AI配置');
+    toast('✅ 配置已保存');
+  } catch(e) {
+    toast('⚠️ 保存配置失败：' + e.message);
+  }
+}
+
+function toggleAIPanel() {
+  const panel = document.getElementById('aiPanel');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+async function showPromptEditor() {
+  if (!aiConfig) {
+    toast('🔍 正在加载配置...');
+    await loadConfig();
+  }
+  if (!aiConfig) {
+    toast('⚠️ 无法加载配置，请检查仓库中 config.json 是否存在');
+    return;
+  }
+  document.getElementById('editScreenPrompt').value = aiConfig.screenPrompt || '';
+  document.getElementById('editAnalyzePrompt').value = aiConfig.analyzePrompt || '';
+  document.getElementById('promptModal').style.display = 'flex';
+}
+
+function closePromptEditor() {
+  document.getElementById('promptModal').style.display = 'none';
+}
+
+async function savePrompts() {
+  const screenPrompt = document.getElementById('editScreenPrompt').value.trim();
+  const analyzePrompt = document.getElementById('editAnalyzePrompt').value.trim();
+  if (!screenPrompt || !analyzePrompt) {
+    document.getElementById('promptModalError').textContent = '提示词不能为空';
+    return;
+  }
+  if (!aiConfig) aiConfig = {};
+  aiConfig.screenPrompt = screenPrompt;
+  aiConfig.analyzePrompt = analyzePrompt;
+  await saveConfigToGH();
+  closePromptEditor();
+}
+
+async function startAIAnalysis() {
+  const statusEl = document.getElementById('aiStatus');
+  const resultEl = document.getElementById('aiResult');
+  const btnEl = document.getElementById('aiStartBtn');
+
+  if (!aiConfig) {
+    await loadConfig();
+  }
+  if (!aiConfig || !aiConfig.deepseekApiKey) {
+    resultEl.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>未找到DeepSeek API Key</p><p style="font-size:.78rem;">请在仓库 config.json 中配置 deepseekApiKey</p></div>';
+    return;
+  }
+  if (!aiConfig.screenPrompt) {
+    resultEl.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>未配置筛选提示词</p><p style="font-size:.78rem;">请点击"编辑提示词"进行配置</p></div>';
+    return;
+  }
+
+  btnEl.disabled = true;
+  btnEl.textContent = '⏳ 分析中...';
+  statusEl.textContent = '正在调用 DeepSeek 筛选股票...';
+  resultEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">⏳ 第一步：AI正在筛选A股优质标的...</div>';
+
+  try {
+    // Step 1: Screen stocks
+    const screenResult = await callDeepSeek(aiConfig.screenPrompt);
+    statusEl.textContent = '筛选完成，正在进行深度分析...';
+    resultEl.innerHTML = '<div style="margin-bottom:16px;padding:12px;background:#eff6ff;border-radius:8px;border-left:3px solid var(--blue);"><strong>📋 筛选结果：</strong><br>' + screenResult.replace(/\n/g, '<br>') + '</div>';
+
+    // Step 2: Try to extract stock names+codes and analyze each
+    if (aiConfig.analyzePrompt) {
+      const stocks = extractStocks(screenResult);
+      if (stocks.length > 0) {
+        statusEl.textContent = `正在深度分析 ${stocks.length} 只股票...`;
+        let deepResult = '';
+        for (let i = 0; i < stocks.length; i++) {
+          const s = stocks[i];
+          statusEl.textContent = `正在分析 ${s.name} (${i+1}/${stocks.length})...`;
+          const prompt = aiConfig.analyzePrompt.replace('【此处粘贴股票名称+代码】', s.name + ' ' + s.code);
+          try {
+            const analysis = await callDeepSeek(prompt);
+            deepResult += `<div class="stock-card"><h4>📈 ${s.name} (${s.code})</h4>${analysis.replace(/\n/g, '<br>')}</div>`;
+          } catch(e) {
+            deepResult += `<div class="stock-card"><h4>⚠️ ${s.name} (${s.code})</h4><p style="color:var(--red);">分析失败：${e.message}</p></div>`;
+          }
+        }
+        resultEl.innerHTML += '<hr style="margin:16px 0;border-color:var(--border);"><strong>🔍 深度分析：</strong><br>' + deepResult;
+      }
+    }
+
+    statusEl.textContent = '✅ 分析完成';
+    btnEl.textContent = '🔄 重新分析';
+    btnEl.disabled = false;
+
+    // 保存结果到用户数据
+    saveAIResult(resultEl.innerHTML);
+
+  } catch(e) {
+    console.error('AI分析失败', e);
+    statusEl.textContent = '❌ 分析失败';
+    resultEl.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>AI分析出错</p><p style="font-size:.78rem;color:var(--red);">' + e.message + '</p></div>';
+    btnEl.textContent = '🔄 重试';
+    btnEl.disabled = false;
+  }
+}
+
+function extractStocks(text) {
+  // 从AI输出中提取股票代码和名称
+  const stocks = [];
+  // 匹配模式：名称(代码) 或 代码 名称 或 XXX(XXXXXX)
+  const patterns = [
+    /([一-龥]+)\s*[（(]\s*(\d{6})\s*[）)]/g,  // 名称(代码)
+    /(\d{6})\s*[：:\s]+([一-龥]+)/g,            // 代码：名称
+    /\b(\d{6})\b/g,                                      // 纯代码
+  ];
+
+  const seen = new Set();
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      if (pattern.source.includes('\\\\d{6}\\\\s*[：:')) {
+        // 代码在前
+        const code = match[1];
+        const name = match[2] || code;
+        if (!seen.has(code)) {
+          seen.add(code);
+          stocks.push({ code, name });
+        }
+      } else if (pattern.source === '\\\\b(\\\\d{6})\\\\b') {
+        // 纯代码
+        const code = match[0];
+        if (!seen.has(code)) {
+          seen.add(code);
+          // 尝试从持仓中找名称
+          const h = holdings.find(x => x.code === code);
+          stocks.push({ code, name: h ? h.name : code });
+        }
+      } else {
+        // 名称(代码)
+        const name = match[1];
+        const code = match[2];
+        if (!seen.has(code)) {
+          seen.add(code);
+          stocks.push({ code, name });
+        }
+      }
+    }
+  }
+  return stocks.slice(0, 5); // 最多分析5只
+}
+
+async function callDeepSeek(prompt) {
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${aiConfig.deepseekApiKey}`
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 4096
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  return data.choices[0].message.content;
+}
+
+async function saveAIResult(html) {
+  if (!currentUser || !masterKey) return;
+  try {
+    const data = {
+      html: html,
+      time: new Date().toISOString(),
+      user: currentUser
+    };
+    const path = `data/${currentUser}/ai_result.json`;
+    let sha = null;
+    try {
+      const existing = await githubGet(path);
+      if (existing) sha = existing.sha;
+    } catch(e) {}
+    await githubPut(path, data, sha, `保存 ${currentUser} 的AI分析结果`);
+  } catch(e) {
+    console.error('保存AI结果失败', e);
+  }
+}
+
+async function loadAIResult() {
+  if (!currentUser || !masterKey) return;
+  try {
+    const result = await githubGet(`data/${currentUser}/ai_result.json`);
+    if (result && result.content && result.content.html) {
+      document.getElementById('aiResult').innerHTML = result.content.html;
+      document.getElementById('aiPanel').style.display = 'block';
+    }
+  } catch(e) {
+    console.error('加载AI结果失败', e);
+  }
+}
 
 // ===== 启动 =====
 console.log('📊 股票持仓管家 · 多用户版已就绪');
