@@ -477,8 +477,7 @@
     </div>
     <div class="login-error" id="loginError"></div>
     <div class="login-actions">
-      <button class="btn-login btn-primary" onclick="doLogin()">进入</button>
-      <button class="btn-login btn-outline" onclick="showUserManager()">管理用户</button>
+      <button class="btn-login btn-primary" onclick="doLogin()" style="width:100%;">进入</button>
     </div>
     <div class="login-hint">
       ⚠️ 密钥不会保存在浏览器中<br>仓库设为私有以保护数据安全
@@ -491,11 +490,6 @@
   <div class="modal">
     <button class="modal-close" onclick="closeUserModal()">✕</button>
     <h3>👥 用户管理</h3>
-    <div class="form-group">
-      <label>🔑 访问密钥（验证权限）</label>
-      <input type="password" id="modalKey" placeholder="输入 GitHub Token">
-    </div>
-    <button class="btn btn-blue" onclick="loadUserList()" style="width:100%;justify-content:center;margin-bottom:12px;">验证并加载</button>
     <div id="modalError" style="color:var(--red);font-size:.75rem;min-height:18px;margin-bottom:6px;"></div>
     <div class="user-list" id="userListContainer" style="display:none;">
       <!-- dynamically filled -->
@@ -520,6 +514,7 @@
     <h1>📊 股票持仓管家 · <span>存钱神器</span></h1>
     <div class="header-right">
       <span class="header-user" id="headerUser" onclick="switchUser()" title="点击切换用户"></span>
+      <button class="btn btn-sm btn-outline" onclick="showUserManager()" title="管理用户">👥</button>
       <span class="refresh-info">🕐 更新于 <strong id="updateTime">--</strong></span>
       <span id="statusBadge" class="badge badge-stale">未连接</span>
       <button class="btn btn-sm btn-ghost" onclick="manualRefresh()" title="手动刷新">🔄 刷新</button>
@@ -862,30 +857,28 @@ function switchUser() {
 // ===== 用户管理 =====
 function showUserManager() {
   document.getElementById('userModal').style.display = 'flex';
-  document.getElementById('modalKey').value = '';
   document.getElementById('modalError').textContent = '';
   document.getElementById('userListContainer').style.display = 'none';
   document.getElementById('addUserRow').style.display = 'none';
+  // 直接加载，使用已登录的 masterKey
+  if (masterKey) {
+    loadUserListWithKey(masterKey);
+  }
 }
 
 function closeUserModal() {
   document.getElementById('userModal').style.display = 'none';
 }
 
-async function loadUserList() {
-  const key = document.getElementById('modalKey').value.trim();
+async function loadUserListWithKey(key) {
   const errEl = document.getElementById('modalError');
 
-  if (!key) { errEl.textContent = '请输入密钥'; return; }
-
   try {
-    // 用临时密钥验证
     const resp = await fetch(`${API_BASE}/users.json`, {
       headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' }
     });
 
     if (resp.status === 404) {
-      // users.json 不存在，创建空列表
       const createResp = await fetch(`${API_BASE}/users.json`, {
         method: 'PUT',
         headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' },
@@ -909,7 +902,7 @@ async function loadUserList() {
     renderUserList(users, key);
 
   } catch(e) {
-    errEl.textContent = '验证失败：' + e.message;
+    errEl.textContent = '加载失败：' + e.message;
   }
 }
 
@@ -1653,14 +1646,10 @@ document.addEventListener('keydown', function(e) {
       addStock();
     }
   }
-  // 用户管理弹窗：回车验证
+  // 用户管理弹窗：回车添加
   if (e.key === 'Enter' && document.getElementById('userModal').style.display === 'flex') {
     e.preventDefault();
-    if (document.getElementById('userListContainer').style.display === 'none') {
-      loadUserList();
-    } else {
-      addUser();
-    }
+    addUser();
   }
 });
 
