@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>股票持仓管家 · 存钱神器</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #e2e6ea;
+    --text: #1a1d23;
+    --text2: #6b7280;
+    --green: #16a34a;
+    --red: #dc2626;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --gold: #d97706;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #fff;
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  }
+  .header-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.5px; white-space: nowrap; }
+  .header h1 span { color: #fbbf24; }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .refresh-info {
+    font-size: .78rem;
+    color: #94a3b8;
+    white-space: nowrap;
+  }
+  .refresh-info strong { color: #e2e8f0; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 600;
+  }
+  .badge-live { background: #16a34a22; color: #4ade80; }
+  .badge-stale { background: #dc262622; color: #f87171; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-blue { background: var(--blue); color: #fff; }
+  .btn-blue:hover { background: #1d4ed8; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: #f9fafb; }
+  .btn-sm { padding: 5px 12px; font-size: .78rem; border-radius: 6px; }
+  .btn-danger { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+  .btn-danger:hover { background: #fee2e2; }
+  .btn-ghost { background: transparent; color: #94a3b8; border: none; padding: 4px 8px; }
+  .btn-ghost:hover { color: #fff; }
+
+  /* ===== CONTAINER ===== */
+  .container { max-width: 1300px; margin: 0 auto; padding: 20px 24px; }
+
+  /* ===== DASHBOARD CARDS ===== */
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: box-shadow .2s;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); }
+  .card-label {
+    font-size: .78rem;
+    color: var(--text2);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-sub {
+    font-size: .75rem;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .gain-up { color: var(--red); }
+  .gain-down { color: var(--green); }
+
+  /* ===== TABLE SECTION ===== */
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .count { color: var(--text2); font-weight: 400; font-size: .82rem; }
+  .table-wrap {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+    min-width: 800px;
+  }
+  thead th {
+    background: #f8fafc;
+    padding: 12px 14px;
+    text-align: right;
+    font-weight: 600;
+    font-size: .76rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  thead th:first-child { text-align: left; }
+  thead th:nth-child(2) { text-align: left; }
+  thead th:nth-child(3) { text-align: left; }
+  tbody td {
+    padding: 12px 14px;
+    text-align: right;
+    border-bottom: 1px solid #f1f3f5;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  tbody td:first-child { text-align: left; }
+  tbody td:nth-child(2) { text-align: left; font-weight: 600; color: var(--blue); }
+  tbody td:nth-child(3) { text-align: left; }
+  tbody td:first-child:hover { background: #f0f4ff; border-radius: 4px; }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: #fafbfc; }
+  .price-live { transition: color .3s; }
+
+  /* ===== ADD FORM ===== */
+  .add-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    padding: 20px 22px;
+    margin-top: 16px;
+  }
+  .add-section h3 { font-size: .92rem; margin-bottom: 12px; }
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: .73rem; color: var(--text2); font-weight: 600; }
+  .form-group input {
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: .88rem;
+    width: 130px;
+    font-family: inherit;
+    transition: border-color .15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .form-group input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px #2563eb18; }
+  .form-group input.wide { width: 160px; }
+  .form-group input.code-input { width: 110px; }
+  .form-group input.shares-input { width: 120px; }
+  .form-hint { font-size: .7rem; color: var(--text2); margin-top: 8px; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text2);
+    font-size: .75rem;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset:0;
+    background: rgba(0,0,0,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    animation: fadeIn .15s ease;
+  }
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal h3 { margin-bottom: 16px; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 20px;
+    font-size: .82rem;
+    z-index: 1000;
+    animation: toastIn .3s ease, toastOut .3s ease 2.5s forwards;
+    pointer-events: none;
+  }
+  @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+  @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text2);
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { margin-bottom: 4px; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .dashboard { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card { padding: 14px; }
+    .card-value { font-size: 1.3rem; }
+    .header h1 { font-size: 1.1rem; }
+    .form-group input { width: 100px; }
+    .form-group input.wide { width: 120px; }
+    .container { padding: 12px; }
+  }
+  @media (max-width: 480px) {
+    .dashboard { grid-template-columns: 1fr 1fr; }
+    .header-inner { padding: 0 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-inner">
+    <h1>📊 股票持仓管家 · <span>存钱神器</span></h1>
+    <div class="header-right">
+      <span class="refresh-info">🕐 更新于 <strong id="updateTime">--</strong></span>
+      <span id="statusBadge" class="badge badge-stale">未连接</span>
+      <button class="btn btn-sm btn-ghost" onclick="manualRefresh()" title="手动刷新">🔄 刷新</button>
+      <label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:#94a3b8;cursor:pointer;">
+        <input type="checkbox" id="autoRefresh" checked onchange="toggleAutoRefresh()"> 自动
+      </label>
+      <span id="syncBadge" class="badge" style="background:#fef3c7;color:#d97706;cursor:pointer;" onclick="requestFileAccess()" title="点击选择同步文件">💾 未同步</span>
+      <button class="btn btn-sm btn-ghost" onclick="exportData()" title="导出备份">📥</button>
+      <button class="btn btn-sm btn-ghost" onclick="document.getElementById('importFile').click()" title="导入备份">📤</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="container">
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="dashboard">
+    <div class="card">
+      <div class="card-label">💰 总本金</div>
+      <div class="card-value" id="totalPrincipal">¥0</div>
+      <div class="card-sub">初始投入成本</div>
+    </div>
+    <div class="card">
+      <div class="card-label">📈 当前总市值</div>
+      <div class="card-value" id="totalValue">¥0</div>
+      <div class="card-sub" id="valueNote">等待刷新...</div>
+    </div>
+    <div class="card">
+      <div class="card-label">📊 总盈亏</div>
+      <div class="card-value" id="totalPnL">¥0</div>
+      <div class="card-sub" id="totalPnLPct">--</div>
+    </div>
+    <div class="card">
+      <div class="card-label">📅 年化收益</div>
+      <div class="card-value" id="sevenDay">--</div>
+      <div class="card-sub" id="sevenDayNote">数据收集中...</div>
+    </div>
+    <div class="card">
+      <div class="card-label">📋 持有标的</div>
+      <div class="card-value" id="stockCount" style="font-size:1.65rem;">0</div>
+      <div class="card-sub">只股票/ETF</div>
+    </div>
+  </div>
+
+  <!-- ===== HOLDINGS TABLE ===== -->
+  <div class="section-title">📋 持仓明细 <span class="count" id="tableCount">(0)</span>
+    <select id="sortSelect" onchange="onSortChange()" style="margin-left:auto;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.78rem;font-family:inherit;background:#fff;cursor:pointer;">
+      <option value="time">🕐 按加入时间</option>
+      <option value="code">🔢 按代码聚合</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>加入时间</th>
+          <th>代码</th>
+          <th>名称</th>
+          <th>成本价</th>
+          <th>股数</th>
+          <th>本金</th>
+          <th>现价</th>
+          <th>当前市值</th>
+          <th>盈亏</th>
+          <th>收益率</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="11"><div class="empty-state"><div class="icon">📝</div><p>还没有持仓</p><p style="font-size:.78rem;">在下方添加你的第一只股票吧</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== ADD FORM ===== -->
+  <div class="add-section">
+    <h3>➕ 添加持仓</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>股票代码</label>
+        <input type="text" id="inputCode" class="code-input" placeholder="如 600900" maxlength="6">
+      </div>
+      <div class="form-group">
+        <label>名称（可留空自动获取）</label>
+        <input type="text" id="inputName" class="wide" placeholder="如 长江电力">
+      </div>
+      <div class="form-group">
+        <label>投入本金（元）</label>
+        <input type="number" id="inputPrincipal" step="0.01" placeholder="如 25000">
+      </div>
+      <div class="form-group">
+        <label>持股数量（股）</label>
+        <input type="number" id="inputShares" class="shares-input" step="1" placeholder="如 1000">
+      </div>
+      <div class="form-group">
+        <label style="color:#6b7280;font-weight:400;">成本价</label>
+        <span id="calcCostPrice" style="padding:9px 0;font-size:.85rem;color:#9ca3af;">自动 = 本金 ÷ 股数</span>
+      </div>
+      <button class="btn btn-blue" onclick="addStock()" style="height:40px;">➕ 添加</button>
+      <button class="btn btn-outline" onclick="clearForm()" style="height:40px;">清空</button>
+    </div>
+    <div class="form-hint">
+      💡 支持沪深A股及ETF。上交所6xxxxx/5xxxxx/9xxxxx，深交所0xxxxx/3xxxxx/2xxxxx。只需输入本金+股数，成本价自动计算。名称留空会自动从行情获取。
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  数据来源：东方财富 | 刷新间隔 60 秒 | 数据仅保存在本地浏览器 | 建议定期导出备份
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div id="toastContainer"></div>
+
+<script>
+// ============================================================
+// 股票持仓管家 · 核心逻辑
+// ============================================================
+
+const STORAGE_KEY_HOLDINGS = 'portfolio_holdings_v2';
+const STORAGE_KEY_SNAPSHOTS = 'portfolio_snapshots_v2';
+const REFRESH_INTERVAL_MS = 60000; // 60秒自动刷新
+
+let holdings = [];
+let snapshots = [];
+let priceCache = {};      // {code: {price, changePct, name, time}}
+let refreshTimer = null;
+let autoRefreshOn = true;
+let sortMode = 'time';    // 'time' | 'code'
+
+// ===== 初始化 =====
+function init() {
+  loadData();
+  renderAll();
+  fetchAllPrices();
+  startAutoRefresh();
+  // 每天存一次快照
+  checkDailySnapshot();
+}
+
+// ===== 数据持久化 =====
+function loadData() {
+  try {
+    const h = localStorage.getItem(STORAGE_KEY_HOLDINGS);
+    holdings = h ? JSON.parse(h) : getDefaultHoldings();
+    const s = localStorage.getItem(STORAGE_KEY_SNAPSHOTS);
+    snapshots = s ? JSON.parse(s) : [];
+  } catch(e) {
+    console.error('数据加载失败', e);
+    holdings = getDefaultHoldings();
+    snapshots = [];
+  }
+}
+
+function saveHoldings() {
+  localStorage.setItem(STORAGE_KEY_HOLDINGS, JSON.stringify(holdings));
+}
+
+function saveSnapshots() {
+  // 只保留最近60天
+  if (snapshots.length > 60) snapshots = snapshots.slice(-60);
+  localStorage.setItem(STORAGE_KEY_SNAPSHOTS, JSON.stringify(snapshots));
+}
+
+function getDefaultHoldings() {
+  // 预置研报中的7只标的作为示例
+  return [
+    { id: uid(), code: '600900', name: '长江电力', costPrice: 25.50, shares: 1000 },
+    { id: uid(), code: '601288', name: '农业银行', costPrice: 4.80, shares: 10000 },
+    { id: uid(), code: '601398', name: '工商银行', costPrice: 5.60, shares: 8000 },
+    { id: uid(), code: '600377', name: '宁沪高速', costPrice: 13.20, shares: 3000 },
+    { id: uid(), code: '601088', name: '中国神华', costPrice: 38.00, shares: 500 },
+    { id: uid(), code: '600941', name: '中国移动', costPrice: 98.00, shares: 200 },
+    { id: uid(), code: '512890', name: '红利低波ETF', costPrice: 1.25, shares: 20000 },
+  ];
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+// ===== 价格获取 =====
+function getSecId(code) {
+  const c = code.trim();
+  if (!c) return null;
+  // 上交所：6xxxxx, 5xxxxx, 9xxxxx
+  if (/^[659]/.test(c)) return '1.' + c;
+  // 深交所：0xxxxx, 3xxxxx, 2xxxxx
+  if (/^[032]/.test(c)) return '0.' + c;
+  return null;
+}
+
+async function fetchAllPrices() {
+  if (holdings.length === 0) {
+    updateTimeDisplay();
+    updateStatusBadge(false);
+    renderAll();
+    return;
+  }
+
+  updateStatusBadge(null); // loading
+
+  // 刷新前保存旧价格用于对比
+  const oldPrices = {};
+  for (const code in priceCache) {
+    oldPrices[code] = priceCache[code].price;
+  }
+
+  const secids = holdings.map(h => getSecId(h.code)).filter(Boolean).join(',');
+  if (!secids) {
+    updateStatusBadge(false);
+    return;
+  }
+
+  const url = `https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${secids}&fields=f2,f3,f12,f14&_=${Date.now()}`;
+
+  let changedCount = 0;
+  try {
+    const resp = await fetch(url, { cache: 'no-cache' });
+    const json = await resp.json();
+
+    if (json.rc === 0 && json.data && json.data.diff) {
+      const now = Date.now();
+      for (const item of json.data.diff) {
+        const code = item.f12;
+        const newPrice = parseFloat(item.f2) || 0;
+        const oldPrice = oldPrices[code];
+        if (oldPrice !== undefined && Math.abs(newPrice - oldPrice) > 0.001) {
+          changedCount++;
+        }
+        priceCache[code] = {
+          price: newPrice,
+          changePct: parseFloat(item.f3) || 0,
+          name: item.f14 || '',
+          time: now,
+        };
+        // 自动补全名称
+        if (item.f14) {
+          const holding = holdings.find(h => h.code === code);
+          if (holding && !holding.name) {
+            holding.name = item.f14;
+            saveHoldings();
+          }
+        }
+      }
+
+      updateStatusBadge(true);
+    } else {
+      updateStatusBadge(false);
+    }
+  } catch(e) {
+    console.error('获取行情失败', e);
+    updateStatusBadge(false);
+  }
+
+  updateTimeDisplay();
+  flashUpdateTime();
+  renderAll();
+  // 每次刷新完成都弹 toast
+  const timeStr = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+  if (changedCount > 0) {
+    toast(`✅ 行情已刷新 (${timeStr})，${changedCount} 只价格变动`);
+  } else {
+    toast(`✅ 行情已刷新 (${timeStr})，价格无变动`);
+  }
+}
+
+function updateStatusBadge(ok) {
+  const badge = document.getElementById('statusBadge');
+  if (ok === true) {
+    badge.textContent = '● 在线';
+    badge.className = 'badge badge-live';
+  } else if (ok === false) {
+    badge.textContent = '● 离线';
+    badge.className = 'badge badge-stale';
+  } else {
+    badge.textContent = '◌ 刷新中';
+    badge.className = 'badge';
+    badge.style.color = '#fbbf24';
+  }
+}
+
+function updateTimeDisplay() {
+  const now = new Date();
+  const ts = now.toLocaleTimeString('zh-CN', { hour12: false });
+  const el = document.getElementById('updateTime');
+  el.textContent = ts;
+}
+
+function flashUpdateTime() {
+  const el = document.getElementById('updateTime');
+  el.style.transition = 'none';
+  el.style.color = '#4ade80';
+  el.style.transform = 'scale(1.15)';
+  setTimeout(() => {
+    el.style.transition = 'all 0.5s ease';
+    el.style.color = '#e2e8f0';
+    el.style.transform = 'scale(1)';
+  }, 50);
+}
+
+// ===== 自动刷新 =====
+function startAutoRefresh() {
+  stopAutoRefresh();
+  if (autoRefreshOn) {
+    refreshTimer = setInterval(fetchAllPrices, REFRESH_INTERVAL_MS);
+  }
+}
+
+function stopAutoRefresh() {
+  if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+}
+
+function toggleAutoRefresh() {
+  autoRefreshOn = document.getElementById('autoRefresh').checked;
+  if (autoRefreshOn) startAutoRefresh();
+  else stopAutoRefresh();
+}
+
+function manualRefresh() {
+  fetchAllPrices();
+}
+
+// ===== 日快照 =====
+function checkDailySnapshot() {
+  const today = new Date().toISOString().slice(0, 10);
+  const hasToday = snapshots.some(s => s.date === today);
+  if (!hasToday && holdings.length > 0) {
+    takeSnapshot();
+  }
+}
+
+function takeSnapshot() {
+  const today = new Date().toISOString().slice(0, 10);
+  const totalVal = calcTotalValue();
+  const totalPrin = calcTotalPrincipal();
+
+  // 替换今天的快照，或新增
+  const idx = snapshots.findIndex(s => s.date === today);
+  const snap = { date: today, totalValue: totalVal, totalPrincipal: totalPrin };
+  if (idx >= 0) snapshots[idx] = snap;
+  else snapshots.push(snap);
+
+  saveSnapshots();
+}
+
+// ===== 计算引擎 =====
+function calcTotalPrincipal() {
+  return holdings.reduce((sum, h) => sum + (h.costPrice * h.shares), 0);
+}
+
+function calcTotalValue() {
+  return holdings.reduce((sum, h) => {
+    const p = priceCache[h.code];
+    return sum + ((p && p.price ? p.price : h.costPrice) * h.shares);
+  }, 0);
+}
+
+function calcSevenDayAnnualized() {
+  // 基于最早加入时间计算持有年化
+  if (holdings.length > 0) {
+    const now = Date.now();
+    const createdAts = holdings.map(h => h.createdAt || 0).filter(t => t > 0);
+    if (createdAts.length > 0) {
+      const earliest = Math.min(...createdAts);
+      const daysHeld = (now - earliest) / (24 * 3600 * 1000);
+      if (daysHeld >= 1) {
+        const totalPrin = calcTotalPrincipal();
+        const totalVal = calcTotalValue();
+        if (totalPrin > 0 && totalVal > 0) {
+          const totalReturn = (totalVal - totalPrin) / totalPrin;
+          const annualized = (Math.pow(1 + totalReturn, 365 / Math.max(daysHeld, 1)) - 1) * 100;
+          return {
+            rate: annualized,
+            oldDate: new Date(earliest).toISOString().slice(0, 10),
+            oldValue: totalPrin,
+            daysDiff: Math.round(daysHeld),
+            source: '加入时间',
+          };
+        }
+      }
+    }
+  }
+
+  // 回退：快照方式
+  const cutoff = Date.now() - 7 * 24 * 3600 * 1000;
+  const recentSnaps = snapshots.filter(s => new Date(s.date).getTime() >= cutoff);
+  if (recentSnaps.length < 2) return null;
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const targetDate = sevenDaysAgo.toISOString().slice(0, 10);
+  const older = snapshots.filter(s => s.date <= targetDate).sort((a, b) => b.date.localeCompare(a.date));
+  if (older.length === 0) return null;
+
+  const oldSnap = older[0];
+  const oldValue = oldSnap.totalValue;
+  const currentValue = calcTotalValue();
+  if (oldValue <= 0) return null;
+
+  const daysDiff = Math.max(1, (new Date() - new Date(oldSnap.date)) / (24 * 3600 * 1000));
+  const ratio = currentValue / oldValue;
+  const annualized = (Math.pow(ratio, 365 / daysDiff) - 1) * 100;
+
+  return {
+    rate: annualized,
+    oldDate: oldSnap.date,
+    oldValue: oldValue,
+    daysDiff: Math.round(daysDiff),
+    source: '快照',
+  };
+}
+
+// 单只股票的年化收益率（基于加入时间）
+function calcStockAnnualized(h) {
+  if (!h.createdAt || !h.costPrice) return null;
+  const cached = priceCache[h.code];
+  if (!cached || !cached.price) return null;
+  const daysHeld = (Date.now() - h.createdAt) / (24 * 3600 * 1000);
+  if (daysHeld < 0.5) return null; // 不足半天不显示
+  const totalReturn = (cached.price - h.costPrice) / h.costPrice;
+  const annualized = (Math.pow(1 + totalReturn, 365 / Math.max(daysHeld, 0.5)) - 1) * 100;
+  return { rate: annualized, daysHeld: Math.round(daysHeld) };
+}
+
+// ===== 持仓管理 =====
+function addStock() {
+  const code = document.getElementById('inputCode').value.trim();
+  const name = document.getElementById('inputName').value.trim();
+  const principal = parseFloat(document.getElementById('inputPrincipal').value);
+  const shares = parseInt(document.getElementById('inputShares').value);
+
+  // 校验
+  if (!code || !/^\d{6}$/.test(code)) return toast('⚠️ 请输入6位股票代码');
+  if (!getSecId(code)) return toast('⚠️ 不支持的股票代码（需沪深A股）');
+  if (isNaN(principal) || principal <= 0) return toast('⚠️ 请输入有效的投入本金');
+  if (isNaN(shares) || shares <= 0 || !Number.isInteger(shares)) return toast('⚠️ 请输入有效的整数股数');
+
+  // 先查股票是否存在
+  verifyAndAdd(code, name, principal, shares);
+}
+
+async function verifyAndAdd(code, name, principal, shares) {
+  toast('🔍 正在验证股票代码...');
+  const secid = getSecId(code);
+
+  try {
+    // 用行情接口验证（和刷新价格同一接口，名称最可靠）
+    const resp = await fetch(`https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${secid}&fields=f2,f12,f14&_=${Date.now()}`, { cache: 'no-cache' });
+    const json = await resp.json();
+
+    if (json.rc !== 0 || !json.data || !json.data.diff || json.data.diff.length === 0) {
+      return toast('⚠️ 股票代码不存在，请检查后重新输入');
+    }
+
+    const item = json.data.diff[0];
+    const curPrice = parseFloat(item.f2) || 0;
+    if (curPrice <= 0) {
+      return toast('⚠️ 该股票已退市或停牌，无当前价格');
+    }
+    const apiName = item.f14 || '';
+
+    // 如果是已持仓股票，自动沿用已有名称
+    const existingSame = holdings.find(h => h.code === code && h.name);
+    const finalName = name || apiName || (existingSame ? existingSame.name : '');
+    const batchNum = holdings.filter(h => h.code === code).length + 1;
+    const batchLabel = batchNum > 1 ? `（第${batchNum}批）` : '';
+    const displayName = finalName || code;
+
+    const costPrice = principal / shares;
+    const newHolding = {
+      id: uid(),
+      code: code,
+      name: finalName,
+      costPrice: costPrice,
+      shares: shares,
+      createdAt: Date.now(),
+    };
+
+    holdings.push(newHolding);
+    saveHoldings();
+    clearForm();
+    toast(`✅ 已添加 ${displayName}${batchLabel}，本金 ¥${principal.toLocaleString()}，成本价 ¥${costPrice.toFixed(3)}`);
+
+    fetchAllPrices().then(() => {
+      takeSnapshot();
+      renderAll();
+    });
+  } catch(e) {
+    console.error('验证失败', e);
+    toast('⚠️ 网络异常，无法验证股票代码');
+  }
+}
+
+function deleteStock(id) {
+  const h = holdings.find(x => x.id === id);
+  if (!h) return;
+  if (!confirm(`确定删除 ${h.name || h.code}（成本 ¥${(h.costPrice * h.shares).toLocaleString()}）？`)) return;
+
+  holdings = holdings.filter(x => x.id !== id);
+  saveHoldings();
+  takeSnapshot();
+  fetchAllPrices();
+  toast(`🗑️ 已删除 ${h.name || h.code}`);
+}
+
+function clearForm() {
+  document.getElementById('inputCode').value = '';
+  document.getElementById('inputName').value = '';
+  document.getElementById('inputPrincipal').value = '';
+  document.getElementById('inputShares').value = '';
+  document.getElementById('calcCostPrice').textContent = '自动 = 本金 ÷ 股数';
+  document.getElementById('inputCode').focus();
+}
+
+// ===== 编辑功能 =====
+function editPrincipal(id) {
+  const h = holdings.find(x => x.id === id);
+  if (!h) return;
+  const curPrincipal = (h.costPrice * h.shares).toFixed(2);
+  const newPrincipal = prompt(`修改 ${h.name || h.code} 的投入本金（元）：\n（当前本金 ¥${Number(curPrincipal).toLocaleString()}，股数 ${h.shares} 股）`, curPrincipal);
+  if (newPrincipal === null) return;
+  const principal = parseFloat(newPrincipal);
+  if (isNaN(principal) || principal <= 0) return toast('⚠️ 本金无效');
+  h.costPrice = principal / h.shares;
+  saveHoldings();
+  takeSnapshot();
+  renderAll();
+  toast(`✏️ ${h.name || h.code} 本金 → ¥${principal.toLocaleString()}，成本价 ¥${h.costPrice.toFixed(3)}`);
+}
+
+function editShares(id) {
+  const h = holdings.find(x => x.id === id);
+  if (!h) return;
+  const curPrincipal = (h.costPrice * h.shares).toFixed(2);
+  const newShares = prompt(`修改 ${h.name || h.code} 的持股数量（股）：\n（当前 ${h.shares} 股，本金 ¥${Number(curPrincipal).toLocaleString()}）`, h.shares);
+  if (newShares === null) return;
+  const shares = parseInt(newShares);
+  if (isNaN(shares) || shares <= 0 || !Number.isInteger(shares)) return toast('⚠️ 股数无效');
+  h.costPrice = parseFloat(curPrincipal) / shares;
+  h.shares = shares;
+  saveHoldings();
+  takeSnapshot();
+  renderAll();
+  toast(`✏️ ${h.name || h.code} 股数 → ${shares} 股，成本价 ¥${h.costPrice.toFixed(3)}`);
+}
+
+function editCreatedAt(id) {
+  const h = holdings.find(x => x.id === id);
+  if (!h) return;
+  const createdAt = h.createdAt ? new Date(h.createdAt) : new Date();
+  const y = createdAt.getFullYear();
+  const m = String(createdAt.getMonth() + 1).padStart(2, '0');
+  const d = String(createdAt.getDate()).padStart(2, '0');
+  const hh = String(createdAt.getHours()).padStart(2, '0');
+  const mm = String(createdAt.getMinutes()).padStart(2, '0');
+  const current = `${y}-${m}-${d} ${hh}:${mm}`;
+  const input = prompt(`修改 ${h.name || h.code} 的加入时间：\n（格式：年-月-日 时:分）`, current);
+  if (input === null) return;
+  const parsed = new Date(input);
+  if (isNaN(parsed.getTime())) return toast('⚠️ 日期格式无效，请用 YYYY-MM-DD HH:mm');
+  h.createdAt = parsed.getTime();
+  saveHoldings();
+  takeSnapshot();
+  renderAll();
+  toast(`✏️ ${h.name || h.code} 加入时间已更新`);
+}
+
+// ===== 渲染 =====
+function renderAll() {
+  renderDashboard();
+  renderTable();
+}
+
+function renderDashboard() {
+  const totalPrin = calcTotalPrincipal();
+  const totalVal = calcTotalValue();
+  const pnl = totalVal - totalPrin;
+  const pnlPct = totalPrin > 0 ? (pnl / totalPrin * 100) : 0;
+  const sevenDay = calcSevenDayAnnualized();
+
+  document.getElementById('totalPrincipal').textContent = '¥' + totalPrin.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  document.getElementById('totalValue').textContent = '¥' + totalVal.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const pnlEl = document.getElementById('totalPnL');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + '¥' + pnl.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  pnlEl.style.color = pnl >= 0 ? 'var(--red)' : 'var(--green)';
+
+  const pnlPctEl = document.getElementById('totalPnLPct');
+  pnlPctEl.textContent = (pnl >= 0 ? '📈 +' : '📉 ') + pnlPct.toFixed(2) + '%';
+  pnlPctEl.style.color = pnl >= 0 ? 'var(--red)' : 'var(--green)';
+
+  const sdEl = document.getElementById('sevenDay');
+  const sdNote = document.getElementById('sevenDayNote');
+  if (sevenDay) {
+    sdEl.textContent = (sevenDay.rate >= 0 ? '+' : '') + sevenDay.rate.toFixed(2) + '%';
+    sdEl.style.color = sevenDay.rate >= 0 ? 'var(--red)' : 'var(--green)';
+    const srcLabel = sevenDay.source === '加入时间' ? '自' + sevenDay.oldDate + '起' : `对比${sevenDay.daysDiff}天前快照`;
+    sdNote.textContent = `${srcLabel}，持有 ${sevenDay.daysDiff} 天`;
+  } else {
+    sdEl.textContent = '--';
+    sdEl.style.color = 'var(--text)';
+    sdNote.textContent = '添加持仓后自动计算';
+  }
+
+  document.getElementById('stockCount').textContent = holdings.length;
+  document.getElementById('valueNote').textContent = totalPrin > 0
+    ? `本金占比 ${(totalPrin / totalVal * 100).toFixed(1)}%`
+    : '等待刷新...';
+}
+
+function getSortedHoldings() {
+  const arr = [...holdings];
+  if (sortMode === 'code') {
+    // 先按代码数字排序，同代码内部按加入时间排序
+    arr.sort((a, b) => {
+      if (a.code !== b.code) return a.code.localeCompare(b.code);
+      return (a.createdAt || 0) - (b.createdAt || 0);
+    });
+  } else {
+    // 按加入时间排序
+    arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  }
+  return arr;
+}
+
+function onSortChange() {
+  sortMode = document.getElementById('sortSelect').value;
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  document.getElementById('tableCount').textContent = `(${holdings.length})`;
+
+  if (holdings.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="icon">📝</div><p>还没有持仓</p><p style="font-size:.78rem;">在下方添加你的第一只股票吧</p></div></td></tr>';
+    return;
+  }
+
+  const sorted = getSortedHoldings();
+  tbody.innerHTML = sorted.map(h => {
+    const costBasis = h.costPrice * h.shares;
+    const cached = priceCache[h.code];
+    const curPrice = (cached && cached.price) ? cached.price : null;
+    const curValue = curPrice ? curPrice * h.shares : null;
+    const pnl = curValue ? curValue - costBasis : null;
+    const pnlPct = curValue ? (pnl / costBasis * 100) : null;
+
+    const priceDisplay = curPrice
+      ? `<span class="price-live">¥${curPrice.toFixed(3)}</span>`
+      : '<span style="color:#9ca3af;">获取中...</span>';
+
+    const valueDisplay = curValue
+      ? `¥${curValue.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})}`
+      : '--';
+
+    const pnlDisplay = pnl !== null
+      ? `<span style="color:${pnl >= 0 ? 'var(--red)' : 'var(--green)'};font-weight:600;">${pnl >= 0 ? '+' : ''}¥${pnl.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>`
+      : '--';
+
+    const pnlPctDisplay = pnlPct !== null
+      ? `<span style="color:${pnl >= 0 ? 'var(--red)' : 'var(--green)'};font-weight:600;">${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%</span>`
+      : '--';
+
+    const createdAt = h.createdAt ? new Date(h.createdAt) : null;
+    const dateStr = createdAt ? createdAt.toLocaleDateString('zh-CN') : '--';
+    const timeStr = createdAt ? createdAt.toLocaleTimeString('zh-CN', { hour12: false }) : '--';
+    const ann = calcStockAnnualized(h);
+
+    return `<tr>
+      <td style="cursor:pointer;" onclick="editCreatedAt('${h.id}')" title="点击修改加入时间">
+        <div style="font-size:.82rem;font-weight:600;">${dateStr}</div>
+        <div style="font-size:.7rem;color:var(--text2);">${timeStr}</div>
+        ${ann ? `<div style="font-size:.72rem;font-weight:700;color:${ann.rate >= 0 ? 'var(--red)' : 'var(--green)'};margin-top:2px;">年化${ann.rate >= 0 ? '+' : ''}${ann.rate.toFixed(1)}%</div>` : ''}
+      </td>
+      <td>${h.code}</td>
+      <td>${h.name || '（待获取）'}</td>
+      <td>¥${h.costPrice.toFixed(3)}</td>
+      <td>${h.shares.toLocaleString()} 股</td>
+      <td>¥${costBasis.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+      <td>${priceDisplay}</td>
+      <td>${valueDisplay}</td>
+      <td>${pnlDisplay}</td>
+      <td>${pnlPctDisplay}</td>
+      <td>
+        <button class="btn btn-sm btn-outline" onclick="editPrincipal('${h.id}')" title="修改本金">💰</button>
+        <button class="btn btn-sm btn-outline" onclick="editShares('${h.id}')" title="修改股数">📦</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteStock('${h.id}')" title="删除">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== 导入导出 =====
+function exportData() {
+  const data = { holdings, snapshots, exportTime: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `持仓备份_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📥 数据已导出');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.holdings || !Array.isArray(data.holdings)) throw new Error('格式错误');
+      if (!confirm(`即将导入 ${data.holdings.length} 条持仓记录（导出时间：${data.exportTime || '未知'}），当前数据将被覆盖，确定？`)) return;
+      holdings = data.holdings;
+      snapshots = data.snapshots || [];
+      saveHoldings();
+      saveSnapshots();
+      fetchAllPrices();
+      toast(`✅ 已导入 ${holdings.length} 条持仓`);
+    } catch(err) {
+      toast('⚠️ 文件格式不正确');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ===== Toast =====
+function toast(msg) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ===== 键盘快捷键 =====
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'F5') {
+    e.preventDefault();
+    manualRefresh();
+  }
+  // Ctrl+Enter 快速添加
+  if (e.ctrlKey && e.key === 'Enter') {
+    e.preventDefault();
+    addStock();
+  }
+});
+
+// ===== 文件同步（File System Access API + IndexedDB） =====
+const DB_NAME = 'portfolio_sync_db';
+const DB_VERSION = 1;
+const STORE_NAME = 'file_handles';
+const SYNC_FILE_KEY = 'sync_file_handle';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => { req.result.createObjectStore(STORE_NAME); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function storeFileHandle(handle) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put(handle, SYNC_FILE_KEY);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+async function getStoredFileHandle() {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).get(SYNC_FILE_KEY);
+      req.onsuccess = () => { db.close(); resolve(req.result || null); };
+      req.onerror = () => { db.close(); reject(req.error); };
+    });
+  } catch(e) { return null; }
+}
+
+// 请求用户选择同步文件
+async function requestFileAccess() {
+  // 如果已有绑定，先尝试重新授权而不是选新文件
+  const stored = await getStoredFileHandle();
+  if (stored) {
+    try {
+      const opts = { mode: 'readwrite' };
+      const granted = await stored.requestPermission(opts);
+      if (granted === 'granted') {
+        await syncToFile(stored);
+        updateSyncBadge(true);
+        toast('✅ 文件权限已恢复，数据已同步');
+        return;
+      }
+    } catch(e) { /* 回退到选新文件 */ }
+  }
+
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: '持仓数据.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+    });
+    await storeFileHandle(handle);
+    await syncToFile(handle);
+    updateSyncBadge(true);
+    toast('✅ 已绑定同步文件，数据将自动保存到文件夹');
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      console.error('文件选择失败', e);
+      toast('⚠️ 浏览器不支持或取消了文件选择');
+    }
+  }
+}
+
+// 写入文件
+async function syncToFile(handle) {
+  if (!handle) {
+    handle = await getStoredFileHandle();
+    if (!handle) return;
+  }
+  try {
+    // 验证权限
+    const opts = { mode: 'readwrite' };
+    if (await handle.queryPermission(opts) !== 'granted') {
+      if (!(await handle.requestPermission(opts) === 'granted')) {
+        updateSyncBadge(false);
+        return;
+      }
+    }
+    const writable = await handle.createWritable();
+    const data = { holdings, snapshots, syncTime: new Date().toISOString() };
+    await writable.write(JSON.stringify(data, null, 2));
+    await writable.close();
+    updateSyncBadge(true);
+  } catch(e) {
+    console.error('文件写入失败', e);
+    updateSyncBadge(false);
+  }
+}
+
+// 从文件读取
+async function syncFromFile() {
+  const handle = await getStoredFileHandle();
+  if (!handle) return null;
+  try {
+    const opts = { mode: 'read' };
+    if (await handle.queryPermission(opts) !== 'granted') {
+      if (!(await handle.requestPermission(opts) === 'granted')) {
+        updateSyncBadge(false);
+        return null;
+      }
+    }
+    const file = await handle.getFile();
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (data.holdings && Array.isArray(data.holdings)) {
+      return data;
+    }
+    return null;
+  } catch(e) {
+    console.error('文件读取失败', e);
+    return null;
+  }
+}
+
+function updateSyncBadge(state) {
+  const badge = document.getElementById('syncBadge');
+  if (!badge) return;
+  if (state === true) {
+    badge.textContent = '💾 已同步';
+    badge.style.background = '#dcfce7';
+    badge.style.color = '#16a34a';
+    badge.title = '数据已同步到本地文件';
+  } else if (state === 'auth') {
+    badge.textContent = '🔒 需授权';
+    badge.style.background = '#fee2e2';
+    badge.style.color = '#dc2626';
+    badge.title = '点击重新授权文件访问';
+  } else {
+    badge.textContent = '💾 未同步';
+    badge.style.background = '#fef3c7';
+    badge.style.color = '#d97706';
+    badge.title = '点击绑定本地文件';
+  }
+}
+
+// 修改 saveHoldings / saveSnapshots 为同步版本
+const _saveHoldings = saveHoldings;
+saveHoldings = function() {
+  _saveHoldings();
+  syncToFile(null); // 异步触发文件同步
+};
+
+const _saveSnapshots = saveSnapshots;
+saveSnapshots = function() {
+  _saveSnapshots();
+  syncToFile(null);
+};
+
+// ===== 启动 =====
+async function initAsync() {
+  // 1. 优先从本地文件同步
+  const stored = await getStoredFileHandle();
+  if (stored) {
+    // 有绑定文件，尝试自动读取
+    const fileData = await syncFromFile();
+    if (fileData && fileData.holdings.length > 0) {
+      holdings = fileData.holdings;
+      snapshots = fileData.snapshots || [];
+      saveHoldings();
+      saveSnapshots();
+      updateSyncBadge(true);
+      console.log('📁 从同步文件加载，共 ' + holdings.length + ' 条持仓');
+    } else {
+      // 文件读取失败（可能权限过期），提示用户
+      updateSyncBadge('auth');
+      console.log('⚠️ 文件权限需重新授权，点击同步按钮');
+    }
+  } else {
+    // 无绑定，用 localStorage（loadData 已加载）
+    updateSyncBadge(false);
+    // 首次使用，弹提示引导绑定
+    if (holdings.length > 0) {
+      setTimeout(() => toast('💡 点击顶部 💾未同步 绑定本地文件，数据更安全'), 1500);
+    }
+  }
+
+  // 2. 正常初始化
+  renderAll();
+  fetchAllPrices();
+  startAutoRefresh();
+  checkDailySnapshot();
+}
+
+// 替换原来的 init()
+init = function() {
+  loadData();
+  initAsync();
+};
+
+init();
+// 实时显示成本价
+document.getElementById('inputPrincipal').addEventListener('input', updateCostPreview);
+document.getElementById('inputShares').addEventListener('input', updateCostPreview);
+function updateCostPreview() {
+  const principal = parseFloat(document.getElementById('inputPrincipal').value);
+  const shares = parseInt(document.getElementById('inputShares').value);
+  const el = document.getElementById('calcCostPrice');
+  if (!isNaN(principal) && principal > 0 && !isNaN(shares) && shares > 0) {
+    el.textContent = '¥' + (principal / shares).toFixed(3) + ' / 股';
+    el.style.color = '#2563eb';
+    el.style.fontWeight = '600';
+  } else {
+    el.textContent = '自动 = 本金 ÷ 股数';
+    el.style.color = '#9ca3af';
+    el.style.fontWeight = '400';
+  }
+}
+// 页面关闭前存快照
+window.addEventListener('beforeunload', takeSnapshot);
+// 每小时自动存一次快照（应对长时间开着页面）
+setInterval(() => { takeSnapshot(); renderAll(); }, 3600000);
+
+console.log('📊 股票持仓管家已就绪');
+console.log('  F5 = 手动刷新行情');
+console.log('  Ctrl+Enter = 快速添加持仓');
+console.log('  数据保存在浏览器 localStorage');
+</script>
+</body>
+</html>
