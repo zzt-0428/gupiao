@@ -344,7 +344,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999;
+    z-index: 1001;
     animation: fadeIn .15s ease;
   }
   .modal {
@@ -678,10 +678,20 @@ function toast(msg) {
 
 // Base64 编解码（支持中文）
 function utf8ToB64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 function b64ToUtf8(str) {
-  return decodeURIComponent(escape(atob(str)));
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder().decode(bytes);
 }
 
 // ===== GitHub API =====
