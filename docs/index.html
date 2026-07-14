@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>股票持仓管家 · 存钱神器</title>
 <style>
   :root {
@@ -29,11 +29,104 @@
     min-height: 100vh;
   }
 
+  /* ===== LOGIN OVERLAY ===== */
+  .login-overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .login-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    text-align: center;
+  }
+  .login-card .logo {
+    font-size: 2.5rem;
+    margin-bottom: 4px;
+  }
+  .login-card h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .login-card h2 span { color: #d97706; }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+    text-align: left;
+  }
+  .form-group label {
+    font-size: .78rem;
+    color: var(--text2);
+    font-weight: 600;
+  }
+  .form-group input {
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: .9rem;
+    font-family: inherit;
+    transition: border-color .15s;
+    width: 100%;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px #2563eb18;
+  }
+  .login-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .btn-login {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .btn-login:active { transform: scale(.97); }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: #f9fafb; }
+  .login-error {
+    color: var(--red);
+    font-size: .78rem;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+  .login-hint {
+    font-size: .72rem;
+    color: var(--text2);
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  /* ===== MAIN APP (hidden initially) ===== */
+  .app-container { display: none; }
+
   /* ===== HEADER ===== */
   .header {
     background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
     color: #fff;
-    padding: 20px 0;
+    padding: 16px 0;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -47,18 +140,27 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
   }
-  .header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.5px; white-space: nowrap; }
+  .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.5px; white-space: nowrap; }
   .header h1 span { color: #fbbf24; }
   .header-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
   }
-  .refresh-info {
+  .header-user {
     font-size: .78rem;
+    color: #fbbf24;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,.1);
+  }
+  .refresh-info {
+    font-size: .75rem;
     color: #94a3b8;
     white-space: nowrap;
   }
@@ -67,7 +169,7 @@
     display: inline-block;
     padding: 3px 10px;
     border-radius: 20px;
-    font-size: .72rem;
+    font-size: .7rem;
     font-weight: 600;
   }
   .badge-live { background: #16a34a22; color: #4ade80; }
@@ -189,7 +291,6 @@
   tbody td:first-child { text-align: left; }
   tbody td:nth-child(2) { text-align: left; font-weight: 600; color: var(--blue); }
   tbody td:nth-child(3) { text-align: left; }
-  tbody td:first-child:hover { background: #f0f4ff; border-radius: 4px; }
   tbody tr { transition: background .15s; }
   tbody tr:hover { background: #fafbfc; }
   .price-live { transition: color .3s; }
@@ -251,11 +352,46 @@
     border-radius: var(--radius);
     padding: 24px;
     width: 90%;
-    max-width: 480px;
+    max-width: 420px;
     box-shadow: var(--shadow-lg);
   }
   .modal h3 { margin-bottom: 16px; }
+  .modal-close {
+    float: right;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text2);
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  /* ===== USER LIST ===== */
+  .user-list { margin: 12px 0; }
+  .user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: .9rem;
+    font-weight: 600;
+  }
+  .user-row .del-btn {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: .82rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .user-row .del-btn:hover { background: #fef2f2; }
 
   /* ===== TOAST ===== */
   .toast {
@@ -271,6 +407,8 @@
     z-index: 1000;
     animation: toastIn .3s ease, toastOut .3s ease 2.5s forwards;
     pointer-events: none;
+    max-width: 90vw;
+    text-align: center;
   }
   @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
   @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
@@ -284,15 +422,37 @@
   .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
   .empty-state p { margin-bottom: 4px; }
 
+  /* ===== SAVING INDICATOR ===== */
+  .saving {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #fbbf24;
+    margin-left: 6px;
+    animation: pulse .8s ease infinite;
+  }
+  .saved {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    margin-left: 6px;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+  }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     .dashboard { grid-template-columns: 1fr 1fr; gap: 8px; }
     .card { padding: 14px; }
     .card-value { font-size: 1.3rem; }
-    .header h1 { font-size: 1.1rem; }
+    .header h1 { font-size: 1.05rem; }
     .form-group input { width: 100px; }
     .form-group input.wide { width: 120px; }
     .container { padding: 12px; }
+    .login-card { padding: 24px 20px; }
   }
   @media (max-width: 480px) {
     .dashboard { grid-template-columns: 1fr 1fr; }
@@ -302,21 +462,74 @@
 </head>
 <body>
 
+<!-- ===== LOGIN OVERLAY ===== -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="logo">📊</div>
+    <h2>股票持仓管家 · <span>存钱神器</span></h2>
+    <div class="form-group">
+      <label>🔑 访问密钥</label>
+      <input type="password" id="loginKey" placeholder="输入 GitHub Token" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>👤 用户名</label>
+      <input type="text" id="loginUser" placeholder="输入你的用户名" autocomplete="off">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-actions">
+      <button class="btn-login btn-primary" onclick="doLogin()">进入</button>
+      <button class="btn-login btn-outline" onclick="showUserManager()">管理用户</button>
+    </div>
+    <div class="login-hint">
+      ⚠️ 密钥不会保存在浏览器中<br>仓库设为私有以保护数据安全
+    </div>
+  </div>
+</div>
+
+<!-- ===== USER MANAGEMENT MODAL ===== -->
+<div class="modal-overlay" id="userModal" style="display:none;">
+  <div class="modal">
+    <button class="modal-close" onclick="closeUserModal()">✕</button>
+    <h3>👥 用户管理</h3>
+    <div class="form-group">
+      <label>🔑 访问密钥（验证权限）</label>
+      <input type="password" id="modalKey" placeholder="输入 GitHub Token">
+    </div>
+    <button class="btn btn-blue" onclick="loadUserList()" style="width:100%;justify-content:center;margin-bottom:12px;">验证并加载</button>
+    <div id="modalError" style="color:var(--red);font-size:.75rem;min-height:18px;margin-bottom:6px;"></div>
+    <div class="user-list" id="userListContainer" style="display:none;">
+      <!-- dynamically filled -->
+    </div>
+    <div class="form-row" id="addUserRow" style="display:none;">
+      <div class="form-group" style="flex:1;">
+        <label>新用户名</label>
+        <input type="text" id="newUserName" placeholder="输入用户名">
+      </div>
+      <button class="btn btn-blue" onclick="addUser()" style="height:40px;">➕ 添加</button>
+    </div>
+    <button class="btn btn-outline" onclick="closeUserModal()" style="width:100%;justify-content:center;margin-top:10px;">返回</button>
+  </div>
+</div>
+
+<!-- ===== MAIN APP (hidden initially) ===== -->
+<div class="app-container" id="appContainer">
+
 <!-- ===== HEADER ===== -->
 <div class="header">
   <div class="header-inner">
     <h1>📊 股票持仓管家 · <span>存钱神器</span></h1>
     <div class="header-right">
+      <span class="header-user" id="headerUser" onclick="switchUser()" title="点击切换用户"></span>
       <span class="refresh-info">🕐 更新于 <strong id="updateTime">--</strong></span>
       <span id="statusBadge" class="badge badge-stale">未连接</span>
       <button class="btn btn-sm btn-ghost" onclick="manualRefresh()" title="手动刷新">🔄 刷新</button>
       <label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:#94a3b8;cursor:pointer;">
         <input type="checkbox" id="autoRefresh" checked onchange="toggleAutoRefresh()"> 自动
       </label>
-      <span id="syncBadge" class="badge" style="background:#fef3c7;color:#d97706;cursor:pointer;" onclick="requestFileAccess()" title="点击选择同步文件">💾 未同步</span>
       <button class="btn btn-sm btn-ghost" onclick="exportData()" title="导出备份">📥</button>
       <button class="btn btn-sm btn-ghost" onclick="document.getElementById('importFile').click()" title="导入备份">📤</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <span id="saveStatus" style="display:none;"></span>
     </div>
   </div>
 </div>
@@ -392,7 +605,7 @@
         <input type="text" id="inputCode" class="code-input" placeholder="如 600900" maxlength="6">
       </div>
       <div class="form-group">
-        <label>名称（可留空自动获取）</label>
+        <label>名称（可留空）</label>
         <input type="text" id="inputName" class="wide" placeholder="如 长江电力">
       </div>
       <div class="form-group">
@@ -411,7 +624,7 @@
       <button class="btn btn-outline" onclick="clearForm()" style="height:40px;">清空</button>
     </div>
     <div class="form-hint">
-      💡 支持沪深A股及ETF。上交所6xxxxx/5xxxxx/9xxxxx，深交所0xxxxx/3xxxxx/2xxxxx。只需输入本金+股数，成本价自动计算。名称留空会自动从行情获取。
+      💡 支持沪深A股及ETF。上交所6xxxxx/5xxxxx/9xxxxx，深交所0xxxxx/3xxxxx/2xxxxx。名称留空会自动从行情获取。数据实时同步到 GitHub。
     </div>
   </div>
 
@@ -419,86 +632,460 @@
 
 <!-- ===== FOOTER ===== -->
 <div class="footer">
-  数据来源：东方财富 | 刷新间隔 60 秒 | 数据仅保存在本地浏览器 | 建议定期导出备份
+  数据来源：东方财富 | 刷新间隔 60 秒 | 数据同步至 GitHub 仓库 | <a href="#" onclick="switchUser();return false;">切换用户</a>
 </div>
+
+</div><!-- /app-container -->
 
 <!-- ===== TOAST CONTAINER ===== -->
 <div id="toastContainer"></div>
 
 <script>
 // ============================================================
-// 股票持仓管家 · 核心逻辑
+// 股票持仓管家 · 多用户 GitHub 版
 // ============================================================
 
-const STORAGE_KEY_HOLDINGS = 'portfolio_holdings_v2';
-const STORAGE_KEY_SNAPSHOTS = 'portfolio_snapshots_v2';
-const REFRESH_INTERVAL_MS = 60000; // 60秒自动刷新
+// ===== 配置 =====
+const GITHUB_REPO = 'zzt-0428/gupiao';
+const API_BASE = `https://api.github.com/repos/${GITHUB_REPO}/contents`;
+const REFRESH_INTERVAL_MS = 60000;
 
+// ===== 会话状态 =====
+let masterKey = '';           // 本次会话的密钥（不持久化）
+let currentUser = '';        // 当前登录用户名
 let holdings = [];
 let snapshots = [];
-let priceCache = {};      // {code: {price, changePct, name, time}}
+let portfolioSha = null;     // 当前 portfolio.json 的 sha
+let priceCache = {};         // {code: {price, changePct, name, time}}
 let refreshTimer = null;
 let autoRefreshOn = true;
-let sortMode = 'time';    // 'time' | 'code'
+let sortMode = 'time';
+let savePending = false;     // 防止并发保存
 
-// ===== 初始化 =====
-function init() {
-  loadData();
-  renderAll();
-  fetchAllPrices();
-  startAutoRefresh();
-  // 每天存一次快照
-  checkDailySnapshot();
-}
-
-// ===== 数据持久化 =====
-function loadData() {
-  try {
-    const h = localStorage.getItem(STORAGE_KEY_HOLDINGS);
-    holdings = h ? JSON.parse(h) : getDefaultHoldings();
-    const s = localStorage.getItem(STORAGE_KEY_SNAPSHOTS);
-    snapshots = s ? JSON.parse(s) : [];
-  } catch(e) {
-    console.error('数据加载失败', e);
-    holdings = getDefaultHoldings();
-    snapshots = [];
-  }
-}
-
-function saveHoldings() {
-  localStorage.setItem(STORAGE_KEY_HOLDINGS, JSON.stringify(holdings));
-}
-
-function saveSnapshots() {
-  // 只保留最近60天
-  if (snapshots.length > 60) snapshots = snapshots.slice(-60);
-  localStorage.setItem(STORAGE_KEY_SNAPSHOTS, JSON.stringify(snapshots));
-}
-
-function getDefaultHoldings() {
-  // 预置研报中的7只标的作为示例
-  return [
-    { id: uid(), code: '600900', name: '长江电力', costPrice: 25.50, shares: 1000 },
-    { id: uid(), code: '601288', name: '农业银行', costPrice: 4.80, shares: 10000 },
-    { id: uid(), code: '601398', name: '工商银行', costPrice: 5.60, shares: 8000 },
-    { id: uid(), code: '600377', name: '宁沪高速', costPrice: 13.20, shares: 3000 },
-    { id: uid(), code: '601088', name: '中国神华', costPrice: 38.00, shares: 500 },
-    { id: uid(), code: '600941', name: '中国移动', costPrice: 98.00, shares: 200 },
-    { id: uid(), code: '512890', name: '红利低波ETF', costPrice: 1.25, shares: 20000 },
-  ];
-}
-
+// ===== 工具函数 =====
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-// ===== 价格获取 =====
+function toast(msg) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// Base64 编解码（支持中文）
+function utf8ToB64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function b64ToUtf8(str) {
+  return decodeURIComponent(escape(atob(str)));
+}
+
+// ===== GitHub API =====
+function apiHeaders() {
+  return {
+    'Authorization': `token ${masterKey}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+async function githubGet(path) {
+  const resp = await fetch(`${API_BASE}/${path}`, { headers: apiHeaders() });
+  if (resp.status === 404) return null;
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  return {
+    content: JSON.parse(b64ToUtf8(data.content)),
+    sha: data.sha
+  };
+}
+
+async function githubPut(path, content, sha, message) {
+  const body = {
+    message: message || `更新 ${path}`,
+    content: utf8ToB64(JSON.stringify(content, null, 2)),
+  };
+  if (sha) body.sha = sha;
+
+  const resp = await fetch(`${API_BASE}/${path}`, {
+    method: 'PUT',
+    headers: apiHeaders(),
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.content.sha;
+}
+
+async function githubDelete(path, sha, message) {
+  const resp = await fetch(`${API_BASE}/${path}`, {
+    method: 'DELETE',
+    headers: apiHeaders(),
+    body: JSON.stringify({
+      message: message || `删除 ${path}`,
+      sha: sha
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${resp.status}`);
+  }
+}
+
+// ===== 登录 =====
+async function doLogin() {
+  const key = document.getElementById('loginKey').value.trim();
+  const user = document.getElementById('loginUser').value.trim();
+  const errEl = document.getElementById('loginError');
+
+  if (!key) { errEl.textContent = '请输入访问密钥'; return; }
+  if (!user) { errEl.textContent = '请输入用户名'; return; }
+  if (!/^[a-zA-Z0-9_一-龥]+$/.test(user)) { errEl.textContent = '用户名只能包含中英文、数字和下划线'; return; }
+
+  errEl.textContent = '';
+  masterKey = key;
+
+  try {
+    // 验证密钥：尝试读取 users.json
+    let result = await githubGet('users.json');
+    let users = result ? result.content : [];
+    let usersSha = result ? result.sha : null;
+
+    if (!Array.isArray(users)) {
+      errEl.textContent = 'users.json 格式错误，请在仓库中修复';
+      return;
+    }
+
+    // 如果用户不在列表，自动添加
+    if (!users.includes(user)) {
+      users.push(user);
+      try {
+        usersSha = await githubPut('users.json', users, usersSha, `添加用户 ${user}`);
+      } catch(e) {
+        // 如果 users.json 不存在，创建它
+        if (!usersSha) {
+          usersSha = await githubPut('users.json', users, null, `创建用户列表，添加 ${user}`);
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    // 加载用户持仓数据
+    await loadPortfolio(user);
+  } catch(e) {
+    console.error('登录失败', e);
+    errEl.textContent = '密钥无效或网络错误：' + e.message;
+    masterKey = '';
+    return;
+  }
+
+  // 登录成功
+  currentUser = user;
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'block';
+  document.getElementById('headerUser').textContent = '👤 ' + currentUser;
+
+  // 启动主应用
+  fetchAllPrices();
+  startAutoRefresh();
+  checkDailySnapshot();
+
+  toast(`✅ 欢迎，${user}`);
+}
+
+async function loadPortfolio(user) {
+  try {
+    const result = await githubGet(`data/${user}/portfolio.json`);
+    if (result) {
+      holdings = result.content.holdings || [];
+      snapshots = result.content.snapshots || [];
+      portfolioSha = result.sha;
+    } else {
+      // 文件不存在，创建空文件
+      const data = { holdings: [], snapshots: [] };
+      portfolioSha = await githubPut(`data/${user}/portfolio.json`, data, null, `初始化 ${user} 的持仓数据`);
+      holdings = [];
+      snapshots = [];
+    }
+    renderAll();
+  } catch(e) {
+    console.error('加载持仓失败', e);
+    toast('⚠️ 加载持仓数据失败：' + e.message);
+    holdings = [];
+    snapshots = [];
+    portfolioSha = null;
+    renderAll();
+  }
+}
+
+function switchUser() {
+  if (savePending) { toast('⚠️ 正在保存中，请稍候'); return; }
+  if (!confirm(`确定退出 ${currentUser} 并切换用户？\n（数据已自动保存）`)) return;
+
+  stopAutoRefresh();
+  currentUser = '';
+  holdings = [];
+  snapshots = [];
+  portfolioSha = null;
+  priceCache = {};
+  masterKey = '';  // 切换用户时清除密钥
+
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('loginKey').value = '';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginError').textContent = '';
+
+  renderAll();
+}
+
+// ===== 用户管理 =====
+function showUserManager() {
+  document.getElementById('userModal').style.display = 'flex';
+  document.getElementById('modalKey').value = '';
+  document.getElementById('modalError').textContent = '';
+  document.getElementById('userListContainer').style.display = 'none';
+  document.getElementById('addUserRow').style.display = 'none';
+}
+
+function closeUserModal() {
+  document.getElementById('userModal').style.display = 'none';
+}
+
+async function loadUserList() {
+  const key = document.getElementById('modalKey').value.trim();
+  const errEl = document.getElementById('modalError');
+
+  if (!key) { errEl.textContent = '请输入密钥'; return; }
+
+  try {
+    // 用临时密钥验证
+    const resp = await fetch(`${API_BASE}/users.json`, {
+      headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' }
+    });
+
+    if (resp.status === 404) {
+      // users.json 不存在，创建空列表
+      const createResp = await fetch(`${API_BASE}/users.json`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: '创建用户列表',
+          content: utf8ToB64('[]')
+        })
+      });
+      if (!createResp.ok) throw new Error('创建失败');
+      renderUserList([], key);
+      return;
+    }
+
+    if (!resp.ok) {
+      errEl.textContent = '密钥无效或无权限访问仓库';
+      return;
+    }
+
+    const data = await resp.json();
+    const users = JSON.parse(b64ToUtf8(data.content));
+    renderUserList(users, key);
+
+  } catch(e) {
+    errEl.textContent = '验证失败：' + e.message;
+  }
+}
+
+function renderUserList(users, key) {
+  const container = document.getElementById('userListContainer');
+  const addRow = document.getElementById('addUserRow');
+  const errEl = document.getElementById('modalError');
+
+  errEl.textContent = '';
+  container.style.display = 'block';
+  addRow.style.display = 'flex';
+
+  if (users.length === 0) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:.85rem;text-align:center;padding:12px;">暂无用户</div>';
+  } else {
+    container.innerHTML = users.map(u => `
+      <div class="user-row">
+        <span>👤 ${u}</span>
+        <button class="del-btn" onclick="deleteUser('${u}')">删除</button>
+      </div>
+    `).join('');
+  }
+
+  // 保存密钥用于后续操作
+  container.dataset.key = key;
+  container.dataset.users = JSON.stringify(users);
+}
+
+async function addUser() {
+  const container = document.getElementById('userListContainer');
+  const key = container.dataset.key;
+  const users = JSON.parse(container.dataset.users || '[]');
+  const newUser = document.getElementById('newUserName').value.trim();
+
+  if (!newUser) { document.getElementById('modalError').textContent = '请输入用户名'; return; }
+  if (!/^[a-zA-Z0-9_一-龥]+$/.test(newUser)) {
+    document.getElementById('modalError').textContent = '用户名只能包含中英文、数字和下划线';
+    return;
+  }
+  if (users.includes(newUser)) {
+    document.getElementById('modalError').textContent = '该用户已存在';
+    return;
+  }
+
+  try {
+    // 获取当前 users.json 的 sha
+    const resp = await fetch(`${API_BASE}/users.json`, {
+      headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' }
+    });
+    if (!resp.ok) throw new Error('获取用户列表失败');
+    const data = await resp.json();
+    const currentSha = data.sha;
+
+    users.push(newUser);
+    const body = {
+      message: `添加用户 ${newUser}`,
+      content: utf8ToB64(JSON.stringify(users, null, 2)),
+      sha: currentSha
+    };
+
+    const putResp = await fetch(`${API_BASE}/users.json`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!putResp.ok) throw new Error('更新失败');
+
+    document.getElementById('newUserName').value = '';
+    document.getElementById('modalError').textContent = '';
+    toast(`✅ 已添加用户 ${newUser}`);
+    renderUserList(users, key);
+
+  } catch(e) {
+    document.getElementById('modalError').textContent = '操作失败：' + e.message;
+  }
+}
+
+async function deleteUser(username) {
+  if (!confirm(`确定删除用户"${username}"？\n该用户的所有持仓数据也将被删除，此操作不可恢复！`)) return;
+
+  const container = document.getElementById('userListContainer');
+  const key = container.dataset.key;
+  const users = JSON.parse(container.dataset.users || '[]');
+
+  try {
+    // 获取当前 users.json
+    const resp = await fetch(`${API_BASE}/users.json`, {
+      headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' }
+    });
+    if (!resp.ok) throw new Error('获取用户列表失败');
+    const data = await resp.json();
+
+    const newUsers = users.filter(u => u !== username);
+    // 更新 users.json
+    const putResp = await fetch(`${API_BASE}/users.json`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `删除用户 ${username}`,
+        content: utf8ToB64(JSON.stringify(newUsers, null, 2)),
+        sha: data.sha
+      })
+    });
+    if (!putResp.ok) throw new Error('更新失败');
+
+    // 尝试删除该用户的持仓数据
+    try {
+      const pfResp = await fetch(`${API_BASE}/data/${username}/portfolio.json`, {
+        headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' }
+      });
+      if (pfResp.ok) {
+        const pfData = await pfResp.json();
+        await fetch(`${API_BASE}/data/${username}/portfolio.json`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `token ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `删除 ${username} 的数据`,
+            sha: pfData.sha
+          })
+        });
+      }
+    } catch(e) {
+      console.error('删除持仓数据失败（可能不存在）', e);
+    }
+
+    toast(`🗑️ 已删除用户 ${username}`);
+    renderUserList(newUsers, key);
+
+  } catch(e) {
+    document.getElementById('modalError').textContent = '操作失败：' + e.message;
+  }
+}
+
+// ===== 数据持久化（GitHub API） =====
+async function savePortfolio(silent) {
+  if (!currentUser || !masterKey) return;
+  if (savePending) {
+    // 如果已经在保存中，等待一下再试
+    await new Promise(r => setTimeout(r, 300));
+    if (savePending) return;
+  }
+
+  savePending = true;
+  const statusEl = document.getElementById('saveStatus');
+  if (statusEl) {
+    statusEl.style.display = 'inline-block';
+    statusEl.className = 'saving';
+  }
+
+  try {
+    const data = { holdings, snapshots };
+    portfolioSha = await githubPut(
+      `data/${currentUser}/portfolio.json`,
+      data,
+      portfolioSha,
+      `更新 ${currentUser} 的持仓`
+    );
+    if (statusEl) {
+      statusEl.className = 'saved';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+    }
+  } catch(e) {
+    console.error('保存失败', e);
+    // 重新获取 sha 以便下次保存
+    try {
+      const result = await githubGet(`data/${currentUser}/portfolio.json`);
+      if (result) portfolioSha = result.sha;
+    } catch(e2) { /* ignore */ }
+    if (!silent) toast('⚠️ 同步到 GitHub 失败：' + e.message);
+    if (statusEl) statusEl.style.display = 'none';
+  }
+  savePending = false;
+}
+
+// 原来的 saveHoldings / saveSnapshots 统一改为 savePortfolio
+function saveHoldings() { savePortfolio(true); }
+function saveSnapshots() {
+  if (snapshots.length > 60) snapshots = snapshots.slice(-60);
+  savePortfolio(true);
+}
+
+// ===== 价格获取（不变） =====
 function getSecId(code) {
   const c = code.trim();
   if (!c) return null;
-  // 上交所：6xxxxx, 5xxxxx, 9xxxxx
   if (/^[659]/.test(c)) return '1.' + c;
-  // 深交所：0xxxxx, 3xxxxx, 2xxxxx
   if (/^[032]/.test(c)) return '0.' + c;
   return null;
 }
@@ -511,9 +1098,8 @@ async function fetchAllPrices() {
     return;
   }
 
-  updateStatusBadge(null); // loading
+  updateStatusBadge(null);
 
-  // 刷新前保存旧价格用于对比
   const oldPrices = {};
   for (const code in priceCache) {
     oldPrices[code] = priceCache[code].price;
@@ -547,16 +1133,13 @@ async function fetchAllPrices() {
           name: item.f14 || '',
           time: now,
         };
-        // 自动补全名称
         if (item.f14) {
           const holding = holdings.find(h => h.code === code);
           if (holding && !holding.name) {
             holding.name = item.f14;
-            saveHoldings();
           }
         }
       }
-
       updateStatusBadge(true);
     } else {
       updateStatusBadge(false);
@@ -569,7 +1152,9 @@ async function fetchAllPrices() {
   updateTimeDisplay();
   flashUpdateTime();
   renderAll();
-  // 每次刷新完成都弹 toast
+  // 行情变了自动保存（名称可能被自动补全)
+  if (changedCount > 0) savePortfolio(true);
+
   const timeStr = new Date().toLocaleTimeString('zh-CN', { hour12: false });
   if (changedCount > 0) {
     toast(`✅ 行情已刷新 (${timeStr})，${changedCount} 只价格变动`);
@@ -596,8 +1181,7 @@ function updateStatusBadge(ok) {
 function updateTimeDisplay() {
   const now = new Date();
   const ts = now.toLocaleTimeString('zh-CN', { hour12: false });
-  const el = document.getElementById('updateTime');
-  el.textContent = ts;
+  document.getElementById('updateTime').textContent = ts;
 }
 
 function flashUpdateTime() {
@@ -640,6 +1224,7 @@ function checkDailySnapshot() {
   const hasToday = snapshots.some(s => s.date === today);
   if (!hasToday && holdings.length > 0) {
     takeSnapshot();
+    savePortfolio(true);
   }
 }
 
@@ -648,13 +1233,10 @@ function takeSnapshot() {
   const totalVal = calcTotalValue();
   const totalPrin = calcTotalPrincipal();
 
-  // 替换今天的快照，或新增
   const idx = snapshots.findIndex(s => s.date === today);
   const snap = { date: today, totalValue: totalVal, totalPrincipal: totalPrin };
   if (idx >= 0) snapshots[idx] = snap;
   else snapshots.push(snap);
-
-  saveSnapshots();
 }
 
 // ===== 计算引擎 =====
@@ -670,7 +1252,6 @@ function calcTotalValue() {
 }
 
 function calcSevenDayAnnualized() {
-  // 基于最早加入时间计算持有年化
   if (holdings.length > 0) {
     const now = Date.now();
     const createdAts = holdings.map(h => h.createdAt || 0).filter(t => t > 0);
@@ -695,7 +1276,6 @@ function calcSevenDayAnnualized() {
     }
   }
 
-  // 回退：快照方式
   const cutoff = Date.now() - 7 * 24 * 3600 * 1000;
   const recentSnaps = snapshots.filter(s => new Date(s.date).getTime() >= cutoff);
   if (recentSnaps.length < 2) return null;
@@ -724,32 +1304,29 @@ function calcSevenDayAnnualized() {
   };
 }
 
-// 单只股票的年化收益率（基于加入时间）
 function calcStockAnnualized(h) {
   if (!h.createdAt || !h.costPrice) return null;
   const cached = priceCache[h.code];
   if (!cached || !cached.price) return null;
   const daysHeld = (Date.now() - h.createdAt) / (24 * 3600 * 1000);
-  if (daysHeld < 0.5) return null; // 不足半天不显示
+  if (daysHeld < 0.5) return null;
   const totalReturn = (cached.price - h.costPrice) / h.costPrice;
   const annualized = (Math.pow(1 + totalReturn, 365 / Math.max(daysHeld, 0.5)) - 1) * 100;
   return { rate: annualized, daysHeld: Math.round(daysHeld) };
 }
 
 // ===== 持仓管理 =====
-function addStock() {
+async function addStock() {
   const code = document.getElementById('inputCode').value.trim();
   const name = document.getElementById('inputName').value.trim();
   const principal = parseFloat(document.getElementById('inputPrincipal').value);
   const shares = parseInt(document.getElementById('inputShares').value);
 
-  // 校验
   if (!code || !/^\d{6}$/.test(code)) return toast('⚠️ 请输入6位股票代码');
   if (!getSecId(code)) return toast('⚠️ 不支持的股票代码（需沪深A股）');
   if (isNaN(principal) || principal <= 0) return toast('⚠️ 请输入有效的投入本金');
   if (isNaN(shares) || shares <= 0 || !Number.isInteger(shares)) return toast('⚠️ 请输入有效的整数股数');
 
-  // 先查股票是否存在
   verifyAndAdd(code, name, principal, shares);
 }
 
@@ -758,7 +1335,6 @@ async function verifyAndAdd(code, name, principal, shares) {
   const secid = getSecId(code);
 
   try {
-    // 用行情接口验证（和刷新价格同一接口，名称最可靠）
     const resp = await fetch(`https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=${secid}&fields=f2,f12,f14&_=${Date.now()}`, { cache: 'no-cache' });
     const json = await resp.json();
 
@@ -773,7 +1349,6 @@ async function verifyAndAdd(code, name, principal, shares) {
     }
     const apiName = item.f14 || '';
 
-    // 如果是已持仓股票，自动沿用已有名称
     const existingSame = holdings.find(h => h.code === code && h.name);
     const finalName = name || apiName || (existingSame ? existingSame.name : '');
     const batchNum = holdings.filter(h => h.code === code).length + 1;
@@ -791,28 +1366,29 @@ async function verifyAndAdd(code, name, principal, shares) {
     };
 
     holdings.push(newHolding);
-    saveHoldings();
     clearForm();
     toast(`✅ 已添加 ${displayName}${batchLabel}，本金 ¥${principal.toLocaleString()}，成本价 ¥${costPrice.toFixed(3)}`);
 
-    fetchAllPrices().then(() => {
-      takeSnapshot();
-      renderAll();
-    });
+    await savePortfolio(true);
+    await fetchAllPrices();
+    takeSnapshot();
+    await savePortfolio(true);
+    renderAll();
   } catch(e) {
     console.error('验证失败', e);
     toast('⚠️ 网络异常，无法验证股票代码');
   }
 }
 
-function deleteStock(id) {
+async function deleteStock(id) {
   const h = holdings.find(x => x.id === id);
   if (!h) return;
   if (!confirm(`确定删除 ${h.name || h.code}（成本 ¥${(h.costPrice * h.shares).toLocaleString()}）？`)) return;
 
   holdings = holdings.filter(x => x.id !== id);
-  saveHoldings();
+  await savePortfolio(true);
   takeSnapshot();
+  await savePortfolio(true);
   fetchAllPrices();
   toast(`🗑️ 已删除 ${h.name || h.code}`);
 }
@@ -823,6 +1399,8 @@ function clearForm() {
   document.getElementById('inputPrincipal').value = '';
   document.getElementById('inputShares').value = '';
   document.getElementById('calcCostPrice').textContent = '自动 = 本金 ÷ 股数';
+  document.getElementById('calcCostPrice').style.color = '#9ca3af';
+  document.getElementById('calcCostPrice').style.fontWeight = '400';
   document.getElementById('inputCode').focus();
 }
 
@@ -836,8 +1414,9 @@ function editPrincipal(id) {
   const principal = parseFloat(newPrincipal);
   if (isNaN(principal) || principal <= 0) return toast('⚠️ 本金无效');
   h.costPrice = principal / h.shares;
-  saveHoldings();
+  savePortfolio(true);
   takeSnapshot();
+  savePortfolio(true);
   renderAll();
   toast(`✏️ ${h.name || h.code} 本金 → ¥${principal.toLocaleString()}，成本价 ¥${h.costPrice.toFixed(3)}`);
 }
@@ -852,8 +1431,9 @@ function editShares(id) {
   if (isNaN(shares) || shares <= 0 || !Number.isInteger(shares)) return toast('⚠️ 股数无效');
   h.costPrice = parseFloat(curPrincipal) / shares;
   h.shares = shares;
-  saveHoldings();
+  savePortfolio(true);
   takeSnapshot();
+  savePortfolio(true);
   renderAll();
   toast(`✏️ ${h.name || h.code} 股数 → ${shares} 股，成本价 ¥${h.costPrice.toFixed(3)}`);
 }
@@ -873,8 +1453,9 @@ function editCreatedAt(id) {
   const parsed = new Date(input);
   if (isNaN(parsed.getTime())) return toast('⚠️ 日期格式无效，请用 YYYY-MM-DD HH:mm');
   h.createdAt = parsed.getTime();
-  saveHoldings();
+  savePortfolio(true);
   takeSnapshot();
+  savePortfolio(true);
   renderAll();
   toast(`✏️ ${h.name || h.code} 加入时间已更新`);
 }
@@ -925,13 +1506,11 @@ function renderDashboard() {
 function getSortedHoldings() {
   const arr = [...holdings];
   if (sortMode === 'code') {
-    // 先按代码数字排序，同代码内部按加入时间排序
     arr.sort((a, b) => {
       if (a.code !== b.code) return a.code.localeCompare(b.code);
       return (a.createdAt || 0) - (b.createdAt || 0);
     });
   } else {
-    // 按加入时间排序
     arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   }
   return arr;
@@ -947,7 +1526,7 @@ function renderTable() {
   document.getElementById('tableCount').textContent = `(${holdings.length})`;
 
   if (holdings.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="icon">📝</div><p>还没有持仓</p><p style="font-size:.78rem;">在下方添加你的第一只股票吧</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11"><div class="empty-state"><div class="icon">📝</div><p>还没有持仓</p><p style="font-size:.78rem;">在下方添加你的第一只股票吧</p></div></td></tr>';
     return;
   }
 
@@ -1007,30 +1586,29 @@ function renderTable() {
 
 // ===== 导入导出 =====
 function exportData() {
-  const data = { holdings, snapshots, exportTime: new Date().toISOString() };
+  const data = { holdings, snapshots, user: currentUser, exportTime: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `持仓备份_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `持仓备份_${currentUser}_${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
   toast('📥 数据已导出');
 }
 
-function importData(event) {
+async function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     try {
       const data = JSON.parse(e.target.result);
       if (!data.holdings || !Array.isArray(data.holdings)) throw new Error('格式错误');
-      if (!confirm(`即将导入 ${data.holdings.length} 条持仓记录（导出时间：${data.exportTime || '未知'}），当前数据将被覆盖，确定？`)) return;
+      if (!confirm(`即将导入 ${data.holdings.length} 条持仓记录（用户：${data.user || '未知'}，导出时间：${data.exportTime || '未知'}），当前数据将被覆盖，确定？`)) return;
       holdings = data.holdings;
       snapshots = data.snapshots || [];
-      saveHoldings();
-      saveSnapshots();
+      await savePortfolio(true);
       fetchAllPrices();
       toast(`✅ 已导入 ${holdings.length} 条持仓`);
     } catch(err) {
@@ -1042,228 +1620,41 @@ function importData(event) {
   event.target.value = '';
 }
 
-// ===== Toast =====
-function toast(msg) {
-  const container = document.getElementById('toastContainer');
-  const el = document.createElement('div');
-  el.className = 'toast';
-  el.textContent = msg;
-  container.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
-}
-
 // ===== 键盘快捷键 =====
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'F5') {
+  // 登录页：回车提交
+  if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') {
     e.preventDefault();
-    manualRefresh();
+    const activeEl = document.activeElement;
+    if (activeEl === document.getElementById('loginUser')) {
+      document.getElementById('loginKey').focus();
+    } else {
+      doLogin();
+    }
   }
-  // Ctrl+Enter 快速添加
-  if (e.ctrlKey && e.key === 'Enter') {
+  // 主应用：F5 刷新、Ctrl+Enter 添加
+  if (document.getElementById('appContainer').style.display !== 'none') {
+    if (e.key === 'F5') {
+      e.preventDefault();
+      manualRefresh();
+    }
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      addStock();
+    }
+  }
+  // 用户管理弹窗：回车验证
+  if (e.key === 'Enter' && document.getElementById('userModal').style.display === 'flex') {
     e.preventDefault();
-    addStock();
+    if (document.getElementById('userListContainer').style.display === 'none') {
+      loadUserList();
+    } else {
+      addUser();
+    }
   }
 });
 
-// ===== 文件同步（File System Access API + IndexedDB） =====
-const DB_NAME = 'portfolio_sync_db';
-const DB_VERSION = 1;
-const STORE_NAME = 'file_handles';
-const SYNC_FILE_KEY = 'sync_file_handle';
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => { req.result.createObjectStore(STORE_NAME); };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function storeFileHandle(handle) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    tx.objectStore(STORE_NAME).put(handle, SYNC_FILE_KEY);
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); reject(tx.error); };
-  });
-}
-
-async function getStoredFileHandle() {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const req = tx.objectStore(STORE_NAME).get(SYNC_FILE_KEY);
-      req.onsuccess = () => { db.close(); resolve(req.result || null); };
-      req.onerror = () => { db.close(); reject(req.error); };
-    });
-  } catch(e) { return null; }
-}
-
-// 请求用户选择同步文件
-async function requestFileAccess() {
-  // 如果已有绑定，先尝试重新授权而不是选新文件
-  const stored = await getStoredFileHandle();
-  if (stored) {
-    try {
-      const opts = { mode: 'readwrite' };
-      const granted = await stored.requestPermission(opts);
-      if (granted === 'granted') {
-        await syncToFile(stored);
-        updateSyncBadge(true);
-        toast('✅ 文件权限已恢复，数据已同步');
-        return;
-      }
-    } catch(e) { /* 回退到选新文件 */ }
-  }
-
-  try {
-    const handle = await window.showSaveFilePicker({
-      suggestedName: '持仓数据.json',
-      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
-    });
-    await storeFileHandle(handle);
-    await syncToFile(handle);
-    updateSyncBadge(true);
-    toast('✅ 已绑定同步文件，数据将自动保存到文件夹');
-  } catch(e) {
-    if (e.name !== 'AbortError') {
-      console.error('文件选择失败', e);
-      toast('⚠️ 浏览器不支持或取消了文件选择');
-    }
-  }
-}
-
-// 写入文件
-async function syncToFile(handle) {
-  if (!handle) {
-    handle = await getStoredFileHandle();
-    if (!handle) return;
-  }
-  try {
-    // 验证权限
-    const opts = { mode: 'readwrite' };
-    if (await handle.queryPermission(opts) !== 'granted') {
-      if (!(await handle.requestPermission(opts) === 'granted')) {
-        updateSyncBadge(false);
-        return;
-      }
-    }
-    const writable = await handle.createWritable();
-    const data = { holdings, snapshots, syncTime: new Date().toISOString() };
-    await writable.write(JSON.stringify(data, null, 2));
-    await writable.close();
-    updateSyncBadge(true);
-  } catch(e) {
-    console.error('文件写入失败', e);
-    updateSyncBadge(false);
-  }
-}
-
-// 从文件读取
-async function syncFromFile() {
-  const handle = await getStoredFileHandle();
-  if (!handle) return null;
-  try {
-    const opts = { mode: 'read' };
-    if (await handle.queryPermission(opts) !== 'granted') {
-      if (!(await handle.requestPermission(opts) === 'granted')) {
-        updateSyncBadge(false);
-        return null;
-      }
-    }
-    const file = await handle.getFile();
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (data.holdings && Array.isArray(data.holdings)) {
-      return data;
-    }
-    return null;
-  } catch(e) {
-    console.error('文件读取失败', e);
-    return null;
-  }
-}
-
-function updateSyncBadge(state) {
-  const badge = document.getElementById('syncBadge');
-  if (!badge) return;
-  if (state === true) {
-    badge.textContent = '💾 已同步';
-    badge.style.background = '#dcfce7';
-    badge.style.color = '#16a34a';
-    badge.title = '数据已同步到本地文件';
-  } else if (state === 'auth') {
-    badge.textContent = '🔒 需授权';
-    badge.style.background = '#fee2e2';
-    badge.style.color = '#dc2626';
-    badge.title = '点击重新授权文件访问';
-  } else {
-    badge.textContent = '💾 未同步';
-    badge.style.background = '#fef3c7';
-    badge.style.color = '#d97706';
-    badge.title = '点击绑定本地文件';
-  }
-}
-
-// 修改 saveHoldings / saveSnapshots 为同步版本
-const _saveHoldings = saveHoldings;
-saveHoldings = function() {
-  _saveHoldings();
-  syncToFile(null); // 异步触发文件同步
-};
-
-const _saveSnapshots = saveSnapshots;
-saveSnapshots = function() {
-  _saveSnapshots();
-  syncToFile(null);
-};
-
-// ===== 启动 =====
-async function initAsync() {
-  // 1. 优先从本地文件同步
-  const stored = await getStoredFileHandle();
-  if (stored) {
-    // 有绑定文件，尝试自动读取
-    const fileData = await syncFromFile();
-    if (fileData && fileData.holdings.length > 0) {
-      holdings = fileData.holdings;
-      snapshots = fileData.snapshots || [];
-      saveHoldings();
-      saveSnapshots();
-      updateSyncBadge(true);
-      console.log('📁 从同步文件加载，共 ' + holdings.length + ' 条持仓');
-    } else {
-      // 文件读取失败（可能权限过期），提示用户
-      updateSyncBadge('auth');
-      console.log('⚠️ 文件权限需重新授权，点击同步按钮');
-    }
-  } else {
-    // 无绑定，用 localStorage（loadData 已加载）
-    updateSyncBadge(false);
-    // 首次使用，弹提示引导绑定
-    if (holdings.length > 0) {
-      setTimeout(() => toast('💡 点击顶部 💾未同步 绑定本地文件，数据更安全'), 1500);
-    }
-  }
-
-  // 2. 正常初始化
-  renderAll();
-  fetchAllPrices();
-  startAutoRefresh();
-  checkDailySnapshot();
-}
-
-// 替换原来的 init()
-init = function() {
-  loadData();
-  initAsync();
-};
-
-init();
-// 实时显示成本价
+// ===== 成本预览 =====
 document.getElementById('inputPrincipal').addEventListener('input', updateCostPreview);
 document.getElementById('inputShares').addEventListener('input', updateCostPreview);
 function updateCostPreview() {
@@ -1280,15 +1671,38 @@ function updateCostPreview() {
     el.style.fontWeight = '400';
   }
 }
-// 页面关闭前存快照
-window.addEventListener('beforeunload', takeSnapshot);
-// 每小时自动存一次快照（应对长时间开着页面）
-setInterval(() => { takeSnapshot(); renderAll(); }, 3600000);
 
-console.log('📊 股票持仓管家已就绪');
-console.log('  F5 = 手动刷新行情');
-console.log('  Ctrl+Enter = 快速添加持仓');
-console.log('  数据保存在浏览器 localStorage');
+// ===== 页面关闭前保存 =====
+window.addEventListener('beforeunload', () => {
+  if (currentUser && masterKey) {
+    takeSnapshot();
+    // 同步保存（beforeunload 支持异步但有限制）
+    const data = { holdings, snapshots };
+    navigator.sendBeacon(
+      `${API_BASE}/data/${currentUser}/portfolio.json`,
+      new Blob([JSON.stringify({
+        message: `自动保存 ${currentUser} 的持仓`,
+        content: utf8ToB64(JSON.stringify(data, null, 2)),
+        sha: portfolioSha
+      })], { type: 'application/json' })
+    );
+  }
+});
+
+// 每小时存快照
+setInterval(() => {
+  if (currentUser) {
+    takeSnapshot();
+    savePortfolio(true);
+    renderAll();
+  }
+}, 3600000);
+
+// ===== 启动 =====
+console.log('📊 股票持仓管家 · 多用户版已就绪');
+console.log('  GitHub 仓库:', GITHUB_REPO);
+console.log('  数据存储: GitHub Contents API');
+console.log('  F5 = 刷新行情 | Ctrl+Enter = 添加持仓');
 </script>
 </body>
 </html>
