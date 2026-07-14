@@ -9,5 +9,11 @@
       "createdAt": 1784008396606
     }
   ],
-  "snapshots": []
+  "snapshots": [
+    {
+      "date": "2026-07-14",
+      "totalValue": 284.6,
+      "totalPrincipal": 200
+    }
+  ]
 }
