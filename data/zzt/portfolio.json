@@ -14,6 +14,11 @@
       "date": "2026-07-14",
       "totalValue": 285.5,
       "totalPrincipal": 200
+    },
+    {
+      "date": "2026-07-20",
+      "totalValue": 200,
+      "totalPrincipal": 200
     }
   ]
 }
