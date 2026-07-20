@@ -1,14 +1,5 @@
 {
-  "holdings": [
-    {
-      "id": "mrk8jcqm4jy3cw",
-      "code": "600900",
-      "name": "长江电力",
-      "costPrice": 20,
-      "shares": 10,
-      "createdAt": 1784008396606
-    }
-  ],
+  "holdings": [],
   "snapshots": [
     {
       "date": "2026-07-14",
