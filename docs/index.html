@@ -469,22 +469,290 @@
     padding: 16px;
     font-size: .85rem;
     line-height: 1.8;
-    max-height: 600px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    max-height: none;
+    overflow-y: visible;
   }
   .ai-result .stock-card {
     background: #fff;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 14px;
+    transition: box-shadow .2s;
+    position: relative;
   }
-  .ai-result .stock-card h4 {
-    color: var(--blue);
+  .ai-result .stock-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  }
+  .ai-result .stock-card .stock-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
     margin-bottom: 8px;
   }
+  .ai-result .stock-card .stock-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--blue);
+  }
+  .ai-result .stock-card .stock-code {
+    font-size: .78rem;
+    color: var(--text2);
+    font-weight: 500;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .ai-result .stock-card .stock-reason {
+    font-size: .82rem;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #fffbeb;
+    border-radius: 6px;
+    border-left: 3px solid #fbbf24;
+  }
+  .ai-result .stock-card .stock-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ai-result .stock-card .stock-actions .btn {
+    font-size: .78rem;
+    padding: 6px 14px;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    border: none;
+  }
+  .btn-gold:hover { background: linear-gradient(135deg, #d97706, #b45309); }
+  .btn-teal {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: #fff;
+    border: none;
+  }
+  .btn-teal:hover { background: linear-gradient(135deg, #0d9488, #0f766e); }
+  .ai-inline-form {
+    display: none;
+    margin-top: 12px;
+    padding: 14px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
+    animation: fadeIn .2s ease;
+  }
+  .ai-inline-form.show { display: block; }
+  .ai-inline-form .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .ai-inline-form input {
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-size: .82rem;
+    width: 110px;
+    font-family: inherit;
+  }
+  .ai-inline-form input:focus { outline: none; border-color: var(--blue); }
+  .ai-inline-form .cost-preview {
+    font-size: .75rem;
+    color: var(--text2);
+    padding: 8px 0;
+  }
+  .ai-inline-analysis {
+    display: none;
+    margin-top: 12px;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: .82rem;
+    line-height: 1.7;
+    max-height: 400px;
+    overflow-y: auto;
+    animation: fadeIn .2s ease;
+  }
+  .ai-inline-analysis.show { display: block; }
+  .ai-inline-analysis h2 {
+    font-size: .9rem;
+    color: #92400e;
+    margin: 10px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #fde68a;
+  }
+  .ai-inline-analysis h2:first-child { margin-top: 0; }
+  .ai-screening-summary {
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border-left: 3px solid var(--blue);
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: .82rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* ===== NEWS PANEL ===== */
+  .news-panel {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    padding: 20px 22px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+  .news-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .news-header .news-stock-label {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+  }
+  .news-server-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+  }
+  .news-server-badge.online { background: #16a34a22; color: #16a34a; }
+  .news-server-badge.offline { background: #dc262622; color: #dc2626; }
+  .news-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .news-source-filter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .73rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .news-source-filter input { cursor: pointer; }
+  .news-list {
+    max-height: 500px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  .news-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f3f5;
+    transition: background .15s;
+    align-items: flex-start;
+  }
+  .news-item:hover { background: #f8fafc; }
+  .news-item-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 48px;
+    flex-shrink: 0;
+  }
+  .news-source-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .65rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-eastmoney { background: #fef3c7; color: #d97706; }
+  .tag-cninfo { background: #dbeafe; color: #2563eb; }
+  .tag-sina { background: #fce7f3; color: #db2777; }
+  .tag-baidu { background: #e0e7ff; color: #4f46e5; }
+  .news-type-tag {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: .62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: #f1f3f5;
+    color: var(--text2);
+  }
+  .news-item-body { flex: 1; min-width: 0; }
+  .news-item-title {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 3px;
+    display: block;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .news-item-title:hover { color: var(--blue); }
+  .news-item-summary {
+    font-size: .76rem;
+    color: var(--text2);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .news-item-time {
+    font-size: .7rem;
+    color: #9ca3af;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 80px;
+    text-align: right;
+  }
+  .news-empty {
+    text-align: center;
+    padding: 30px;
+    color: var(--text2);
+  }
+  .news-loading {
+    text-align: center;
+    padding: 30px;
+    color: var(--text2);
+  }
+  .news-analyze-section {
+    margin-top: 16px;
+    padding: 16px;
+    background: #fffbeb;
+    border-radius: 8px;
+    border: 1px solid #fde68a;
+    font-size: .85rem;
+    line-height: 1.8;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  .news-analyze-section h2 {
+    font-size: .95rem;
+    color: #92400e;
+    margin: 12px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #fde68a;
+  }
+  .news-analyze-section h2:first-child { margin-top: 0; }
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
@@ -681,9 +949,42 @@
       <span class="ai-status" id="aiStatus"></span>
     </div>
     <div class="ai-result" id="aiResult">
-      <div class="empty-state"><div class="icon">🤖</div><p>点击"开始分析"调用DeepSeek AI</p><p style="font-size:.78rem;">分析结果将保存在你的账户中</p></div>
+      <div class="empty-state"><div class="icon">🤖</div><p>点击"开始分析"调用DeepSeek AI精选10只股票</p><p style="font-size:.78rem;">分析后可逐只添加到持仓或查看AI资讯分析</p></div>
     </div>
   </div>
+</div>
+
+<!-- ===== NEWS PANEL ===== -->
+<div class="news-panel" id="newsPanel" style="display:none;">
+  <div class="news-header">
+    <span class="news-stock-label">📰 资讯分析：<span id="newsStockName">--</span></span>
+    <span id="newsServerBadge" class="news-server-badge offline">🔌 服务离线</span>
+    <button class="btn btn-sm btn-outline" onclick="closeNewsPanel()" style="margin-left:auto;">✕ 关闭</button>
+  </div>
+  <div class="news-controls">
+    <button class="btn btn-sm btn-blue" id="newsAnalyzeBtn" onclick="startNewsAnalysis()">🤖 AI 分析</button>
+    <label class="news-source-filter" title="打开时自动调用AI分析">
+      <input type="checkbox" id="newsAutoAnalyze" checked> 自动分析
+    </label>
+    <span style="color:var(--border);margin:0 4px;">|</span>
+    <label class="news-source-filter" title="显示/隐藏东方财富">
+      <input type="checkbox" checked onchange="filterNewsBySource()" data-source="东方财富"> 东方财富
+    </label>
+    <label class="news-source-filter" title="显示/隐藏巨潮资讯">
+      <input type="checkbox" checked onchange="filterNewsBySource()" data-source="巨潮资讯"> 巨潮资讯
+    </label>
+    <label class="news-source-filter" title="显示/隐藏新浪财经">
+      <input type="checkbox" checked onchange="filterNewsBySource()" data-source="新浪财经"> 新浪财经
+    </label>
+    <label class="news-source-filter" title="显示/隐藏百度新闻">
+      <input type="checkbox" checked onchange="filterNewsBySource()" data-source="百度新闻"> 百度新闻
+    </label>
+    <button class="btn btn-sm btn-outline" onclick="refreshNews()" style="margin-left:auto;">🔄 刷新资讯</button>
+  </div>
+  <div class="news-list" id="newsList">
+    <div class="news-empty"><div class="icon">📰</div><p>点击持仓表中的 📰 按钮查看资讯</p><p style="font-size:.78rem;">或点击"AI 分析"获取智能分析</p></div>
+  </div>
+  <div id="newsAnalysisSection"></div>
 </div>
 
 <!-- ===== PROMPT EDITOR MODAL ===== -->
@@ -693,12 +994,8 @@
     <h3>✏️ 编辑AI提示词</h3>
     <div style="color:var(--text2);font-size:.75rem;margin-bottom:8px;">修改后所有用户共用新提示词</div>
     <div class="form-group">
-      <label>📋 筛选提示词（第一步：海选股票）</label>
+      <label>📋 筛选提示词（AI选股逻辑）</label>
       <textarea id="editScreenPrompt" rows="8" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;resize:vertical;"></textarea>
-    </div>
-    <div class="form-group">
-      <label>🔍 分析提示词（第二步：深度研判每只股票）</label>
-      <textarea id="editAnalyzePrompt" rows="8" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;resize:vertical;"></textarea>
     </div>
     <div id="promptModalError" style="color:var(--red);font-size:.75rem;min-height:18px;"></div>
     <div style="display:flex;gap:10px;margin-top:8px;">
@@ -739,6 +1036,13 @@ let refreshTimer = null;
 let autoRefreshOn = true;
 let sortMode = 'time';
 let savePending = false;     // 防止并发保存
+
+// ===== 新闻面板状态 =====
+const NEWS_BACKEND_URL = 'http://127.0.0.1:8765';
+let newsServerOnline = false;
+let newsCurrentCode = '';
+let newsCurrentName = '';
+let newsAllItems = [];        // 缓存全部新闻（用于前端过滤）
 
 // ===== 工具函数 =====
 function uid() {
@@ -889,6 +1193,7 @@ async function doLogin() {
   checkDailySnapshot();
   loadConfig();
   loadAIResult();
+  checkServerHealth();  // 检测资讯服务是否在线
 
   toast(`✅ 欢迎，${user}`);
 }
@@ -1664,6 +1969,7 @@ function renderTable() {
       <td>${pnlDisplay}</td>
       <td>${pnlPctDisplay}</td>
       <td>
+        <button class="btn btn-sm btn-outline" onclick="openNewsPanel('${h.code}','${h.name || h.code}')" title="查看资讯">📰</button>
         <button class="btn btn-sm btn-outline" onclick="editPrincipal('${h.id}')" title="修改本金">💰</button>
         <button class="btn btn-sm btn-outline" onclick="editShares('${h.id}')" title="修改股数">📦</button>
         <button class="btn btn-sm btn-danger" onclick="deleteStock('${h.id}')" title="删除">🗑</button>
@@ -1783,7 +2089,7 @@ setInterval(() => {
 }, 3600000);
 
 // ===== AI 分析 =====
-let aiConfig = null;  // {deepseekApiKey, screenPrompt, analyzePrompt}
+let aiConfig = null;  // {deepseekApiKey, screenPrompt}
 
 async function loadConfig() {
   try {
@@ -1829,7 +2135,6 @@ async function showPromptEditor() {
     return;
   }
   document.getElementById('editScreenPrompt').value = aiConfig.screenPrompt || '';
-  document.getElementById('editAnalyzePrompt').value = aiConfig.analyzePrompt || '';
   document.getElementById('promptModal').style.display = 'flex';
 }
 
@@ -1839,14 +2144,12 @@ function closePromptEditor() {
 
 async function savePrompts() {
   const screenPrompt = document.getElementById('editScreenPrompt').value.trim();
-  const analyzePrompt = document.getElementById('editAnalyzePrompt').value.trim();
-  if (!screenPrompt || !analyzePrompt) {
+  if (!screenPrompt) {
     document.getElementById('promptModalError').textContent = '提示词不能为空';
     return;
   }
   if (!aiConfig) aiConfig = {};
   aiConfig.screenPrompt = screenPrompt;
-  aiConfig.analyzePrompt = analyzePrompt;
   await saveConfigToGH();
   closePromptEditor();
 }
@@ -1871,40 +2174,52 @@ async function startAIAnalysis() {
   btnEl.disabled = true;
   btnEl.textContent = '⏳ 分析中...';
   statusEl.textContent = '正在调用 DeepSeek 筛选股票...';
-  resultEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">⏳ 第一步：AI正在筛选A股优质标的...</div>';
+  resultEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text2);">⏳ AI正在从A股市场筛选10只优质标的...</div>';
 
   try {
     // Step 1: Screen stocks
     const screenResult = await callDeepSeek(aiConfig.screenPrompt);
-    statusEl.textContent = '筛选完成，正在进行深度分析...';
-    resultEl.innerHTML = '<div style="margin-bottom:16px;padding:12px;background:#eff6ff;border-radius:8px;border-left:3px solid var(--blue);"><strong>📋 筛选结果：</strong><br>' + screenResult.replace(/\n/g, '<br>') + '</div>';
+    statusEl.textContent = '筛选完成，正在整理结果...';
 
-    // Step 2: Try to extract stock names+codes and analyze each
-    if (aiConfig.analyzePrompt) {
-      const stocks = extractStocks(screenResult);
-      if (stocks.length > 0) {
-        statusEl.textContent = `正在深度分析 ${stocks.length} 只股票...`;
-        let deepResult = '';
-        for (let i = 0; i < stocks.length; i++) {
-          const s = stocks[i];
-          statusEl.textContent = `正在分析 ${s.name} (${i+1}/${stocks.length})...`;
-          const prompt = aiConfig.analyzePrompt.replace('【此处粘贴股票名称+代码】', s.name + ' ' + s.code);
-          try {
-            const analysis = await callDeepSeek(prompt);
-            deepResult += `<div class="stock-card"><h4>📈 ${s.name} (${s.code})</h4>${analysis.replace(/\n/g, '<br>')}</div>`;
-          } catch(e) {
-            deepResult += `<div class="stock-card"><h4>⚠️ ${s.name} (${s.code})</h4><p style="color:var(--red);">分析失败：${e.message}</p></div>`;
-          }
+    // Step 2: Extract stocks from result (up to 10)
+    const stocks = extractStocks(screenResult);
+
+    // Build result HTML with stock cards
+    let html = '';
+    html += '<div class="ai-screening-summary"><strong>📋 AI筛选分析：</strong><br>' + screenResult.replace(/\n/g, '<br>') + '</div>';
+
+    if (stocks.length > 0) {
+      html += '<div style="font-weight:700;margin-bottom:10px;font-size:.9rem;">📊 精选出 ' + stocks.length + ' 只股票：</div>';
+      for (let i = 0; i < stocks.length; i++) {
+        const s = stocks[i];
+        const cardId = 'aiStockCard_' + i;
+        const reason = extractStockReason(screenResult, s);
+        html += '<div class="stock-card" id="' + cardId + '">';
+        html += '  <div class="stock-header">';
+        html += '    <span class="stock-name">📈 ' + (i+1) + '. ' + s.name + '</span>';
+        html += '    <span class="stock-code">' + s.code + '</span>';
+        html += '  </div>';
+        if (reason) {
+          html += '  <div class="stock-reason">💡 ' + reason + '</div>';
         }
-        resultEl.innerHTML += '<hr style="margin:16px 0;border-color:var(--border);"><strong>🔍 深度分析：</strong><br>' + deepResult;
+        html += '  <div class="stock-actions">';
+        html += '    <button class="btn btn-gold" onclick="toggleAddForm(\'' + cardId + '\', \'' + s.code + '\', \'' + s.name.replace(/'/g, "\\'") + '\')">➕ 添加到持仓</button>';
+        html += '    <button class="btn btn-teal" onclick="analyzeAIStockNews(\'' + cardId + '\', \'' + s.code + '\', \'' + s.name.replace(/'/g, "\\'") + '\')">📰 AI资讯分析</button>';
+        html += '  </div>';
+        html += '  <div class="ai-inline-form" id="form_' + cardId + '"></div>';
+        html += '  <div class="ai-inline-analysis" id="analysis_' + cardId + '"></div>';
+        html += '</div>';
       }
+    } else {
+      html += '<div style="color:var(--text2);padding:12px;">⚠️ 未能从AI结果中自动提取股票代码，请查看上方筛选摘要手动选股。<br>提示：让AI在输出中使用"名称(代码)"格式列出股票。</div>';
     }
 
-    statusEl.textContent = '✅ 分析完成';
+    resultEl.innerHTML = html;
+    statusEl.textContent = '✅ 分析完成 — 共筛选出 ' + stocks.length + ' 只股票';
     btnEl.textContent = '🔄 重新分析';
     btnEl.disabled = false;
 
-    // 保存结果到用户数据
+    // Save result
     saveAIResult(resultEl.innerHTML);
 
   } catch(e) {
@@ -1915,50 +2230,237 @@ async function startAIAnalysis() {
     btnEl.disabled = false;
   }
 }
-
 function extractStocks(text) {
   // 从AI输出中提取股票代码和名称
   const stocks = [];
-  // 匹配模式：名称(代码) 或 代码 名称 或 XXX(XXXXXX)
-  const patterns = [
-    /([一-龥]+)\s*[（(]\s*(\d{6})\s*[）)]/g,  // 名称(代码)
-    /(\d{6})\s*[：:\s]+([一-龥]+)/g,            // 代码：名称
-    /\b(\d{6})\b/g,                                      // 纯代码
-  ];
-
   const seen = new Set();
-  for (const pattern of patterns) {
-    let match;
-    while ((match = pattern.exec(text)) !== null) {
-      if (pattern.source.includes('\\\\d{6}\\\\s*[：:')) {
-        // 代码在前
-        const code = match[1];
-        const name = match[2] || code;
-        if (!seen.has(code)) {
-          seen.add(code);
-          stocks.push({ code, name });
-        }
-      } else if (pattern.source === '\\\\b(\\\\d{6})\\\\b') {
-        // 纯代码
-        const code = match[0];
-        if (!seen.has(code)) {
-          seen.add(code);
-          // 尝试从持仓中找名称
-          const h = holdings.find(x => x.code === code);
-          stocks.push({ code, name: h ? h.name : code });
-        }
-      } else {
-        // 名称(代码)
-        const name = match[1];
-        const code = match[2];
-        if (!seen.has(code)) {
-          seen.add(code);
-          stocks.push({ code, name });
-        }
+
+  // Pattern 1: 名称(代码) 或 名称（代码）— 支持中英文名称
+  const p1 = /([一-鿿\w]+)[\s]*[（(]\s*(\d{6})\s*[）)]/g;
+  let m;
+  while ((m = p1.exec(text)) !== null) {
+    const name = m[1].trim();
+    const code = m[2];
+    if (!seen.has(code) && name.length > 0) {
+      seen.add(code);
+      stocks.push({ code, name });
+    }
+  }
+
+  // Pattern 2: 代码后跟名称，如 "600519 贵州茅台" 或 "600519：贵州茅台"
+  const p2 = /(\d{6})\s*[：:\s]+\s*([一-鿿\w]+)/g;
+  while ((m = p2.exec(text)) !== null) {
+    const code = m[1];
+    const name = m[2].trim();
+    if (!seen.has(code) && name.length > 0 && !/^\d+$/.test(name)) {
+      seen.add(code);
+      stocks.push({ code, name });
+    }
+  }
+
+  // Pattern 3: 纯6位代码（兜底）
+  const p3 = /(?<!\d)([56]\d{5}|[023]\d{5})(?!\d)/g;
+  while ((m = p3.exec(text)) !== null) {
+    const code = m[1];
+    if (!seen.has(code)) {
+      seen.add(code);
+      const h = holdings.find(x => x.code === code);
+      stocks.push({ code, name: h ? h.name : code });
+    }
+  }
+
+  return stocks.slice(0, 10);
+}
+
+
+function extractStockReason(fullText, stock) {
+  // 优先匹配新格式: "N. 名称(代码) — 理由" 或 "N. 名称(代码) - 理由"
+  const pattern1 = new RegExp(
+    '(?:^|\\n)\\s*\\d+\\.?\\s*' + stock.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*[（(]' + stock.code + '[）)]\\s*[—\\-]\\s*([^\\n]+)',
+    'i'
+  );
+  const m1 = fullText.match(pattern1);
+  if (m1 && m1[1] && m1[1].trim().length > 4) {
+    return m1[1].trim();
+  }
+
+  // 兜底：扫描包含代码或名称的行
+  if (!fullText) return '';
+  const lines = fullText.split('\n');
+  const relevant = [];
+  for (const line of lines) {
+    if (line.includes(stock.code) || line.includes(stock.name)) {
+      const clean = line.replace(/^[#*\-\d.\s]+/, '').trim();
+      if (clean.length > 10 && clean.length < 200) {
+        relevant.push(clean);
       }
     }
   }
-  return stocks.slice(0, 5); // 最多分析5只
+  return relevant.slice(0, 2).join('；') || '';
+}
+
+function toggleAddForm(cardId, code, name) {
+  const formEl = document.getElementById('form_' + cardId);
+  if (!formEl) return;
+  const isOpen = formEl.classList.contains('show');
+  // Close all other forms first
+  document.querySelectorAll('.ai-inline-form.show').forEach(el => el.classList.remove('show'));
+  if (isOpen) return;
+  formEl.innerHTML = '<div class="form-row">' +
+    '<div class="form-group"><label style="font-size:.73rem;color:var(--text2);font-weight:600;">投入本金(元)</label>' +
+    '<input type="number" id="aiPrincipal_' + cardId + '" step="0.01" placeholder="如 25000" oninput="updateAICostPreview(\'' + cardId + '\')"></div>' +
+    '<div class="form-group"><label style="font-size:.73rem;color:var(--text2);font-weight:600;">持股数量(股)</label>' +
+    '<input type="number" id="aiShares_' + cardId + '" step="1" placeholder="如 1000" oninput="updateAICostPreview(\'' + cardId + '\')"></div>' +
+    '<span class="cost-preview" id="aiCostPreview_' + cardId + '">自动 = 本金 ÷ 股数</span>' +
+    '<button class="btn btn-blue btn-sm" onclick="addStockFromAI(\'' + cardId + '\', \'' + code + '\', \'' + name.replace(/'/g, "\\'") + '\')">\u2705 确认添加</button>' +
+    '</div>';
+  formEl.classList.add('show');
+  formEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function updateAICostPreview(cardId) {
+  const principal = parseFloat(document.getElementById('aiPrincipal_' + cardId)?.value);
+  const shares = parseInt(document.getElementById('aiShares_' + cardId)?.value);
+  const el = document.getElementById('aiCostPreview_' + cardId);
+  if (!el) return;
+  if (!isNaN(principal) && principal > 0 && !isNaN(shares) && shares > 0) {
+    el.textContent = '\u00a5' + (principal / shares).toFixed(3) + ' / 股';
+    el.style.color = '#2563eb';
+    el.style.fontWeight = '600';
+  } else {
+    el.textContent = '自动 = 本金 ÷ 股数';
+    el.style.color = '#9ca3af';
+    el.style.fontWeight = '400';
+  }
+}
+
+async function addStockFromAI(cardId, code, name) {
+  const principal = parseFloat(document.getElementById('aiPrincipal_' + cardId)?.value);
+  const shares = parseInt(document.getElementById('aiShares_' + cardId)?.value);
+
+  if (!code || !/^\d{6}$/.test(code)) return toast('\u26a0\ufe0f 无效的股票代码');
+  if (!getSecId(code)) return toast('\u26a0\ufe0f 不支持的股票代码（需沪深A股）');
+  if (isNaN(principal) || principal <= 0) return toast('\u26a0\ufe0f 请输入有效的投入本金');
+  if (isNaN(shares) || shares <= 0 || !Number.isInteger(shares)) return toast('\u26a0\ufe0f 请输入有效的整数股数');
+
+  toast('\ud83d\udd0d 正在验证股票代码...');
+  const secid = getSecId(code);
+
+  try {
+    const resp = await fetch('https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&secids=' + secid + '&fields=f2,f12,f14&_=' + Date.now(), { cache: 'no-cache' });
+    const json = await resp.json();
+
+    if (json.rc !== 0 || !json.data || !json.data.diff || json.data.diff.length === 0) {
+      return toast('\u26a0\ufe0f 股票代码不存在，请检查后重新输入');
+    }
+
+    const item = json.data.diff[0];
+    const curPrice = parseFloat(item.f2) || 0;
+    if (curPrice <= 0) {
+      return toast('\u26a0\ufe0f 该股票已退市或停牌，无当前价格');
+    }
+    const apiName = item.f14 || '';
+
+    const finalName = name || apiName || code;
+    const costPrice = principal / shares;
+
+    const newHolding = {
+      id: uid(),
+      code: code,
+      name: finalName,
+      costPrice: costPrice,
+      shares: shares,
+      createdAt: Date.now(),
+    };
+
+    holdings.push(newHolding);
+
+    // Hide the form
+    const formEl = document.getElementById('form_' + cardId);
+    if (formEl) { formEl.classList.remove('show'); formEl.innerHTML = ''; }
+
+    // Show success in the card
+    const cardEl = document.getElementById(cardId);
+    if (cardEl) {
+      const actionsEl = cardEl.querySelector('.stock-actions');
+      if (actionsEl) {
+        const doneMark = document.createElement('span');
+        doneMark.style.cssText = 'font-size:.82rem;color:#16a34a;font-weight:600;';
+        doneMark.textContent = '\u2705 已添加 \u00a5' + principal.toLocaleString();
+        actionsEl.appendChild(doneMark);
+      }
+    }
+
+    toast('\u2705 已添加 ' + finalName + '，本金 \u00a5' + principal.toLocaleString() + '，成本价 \u00a5' + costPrice.toFixed(3));
+    await savePortfolio(true);
+    await fetchAllPrices();
+    takeSnapshot();
+    await savePortfolio(true);
+    renderAll();
+
+  } catch(e) {
+    console.error('验证失败', e);
+    toast('\u26a0\ufe0f 网络异常，无法验证股票代码');
+  }
+}
+
+async function analyzeAIStockNews(cardId, code, name) {
+  const analysisEl = document.getElementById('analysis_' + cardId);
+  if (!analysisEl) return;
+
+  // Toggle: if already open, close it
+  if (analysisEl.classList.contains('show')) {
+    analysisEl.classList.remove('show');
+    return;
+  }
+
+  // Close other analyses
+  document.querySelectorAll('.ai-inline-analysis.show').forEach(el => el.classList.remove('show'));
+
+  analysisEl.classList.add('show');
+  analysisEl.innerHTML = '<div class="news-loading">\ud83d\udd0d 正在获取' + name + '的最新资讯...</div>';
+  analysisEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  await checkServerHealth();
+
+  if (!newsServerOnline) {
+    analysisEl.innerHTML = '<div style="color:#dc2626;padding:12px;">\u26a0\ufe0f 资讯服务离线，请先运行 python server.py 启动后端服务</div>';
+    return;
+  }
+
+  try {
+    // Fetch news
+    const newsResp = await fetch(NEWS_BACKEND_URL + '/api/news/' + code + '?name=' + encodeURIComponent(name) + '&limit=20',
+      { signal: AbortSignal.timeout(25000) });
+    const newsData = await newsResp.json();
+    const newsCount = newsData.news ? newsData.news.length : 0;
+
+    analysisEl.innerHTML = '<div class="news-loading">\ud83e\udd16 已获取' + newsCount + '条资讯，正在调用DeepSeek进行AI分析...</div>';
+
+    // Run AI analysis via backend
+    const aiResp = await fetch(NEWS_BACKEND_URL + '/api/ai/analyze/' + code + '?name=' + encodeURIComponent(name) + '&mode=full',
+      { signal: AbortSignal.timeout(130000) });
+    const aiData = await aiResp.json();
+
+    if (aiData.success && aiData.analysis) {
+      let formatted = aiData.analysis
+        .replace(/##\s*([^\n]+)/g, '<h2>$1</h2>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+      formatted = '<p>' + formatted + '</p>';
+      formatted = formatted.replace(/<p><\/p>/g, '');
+
+      analysisEl.innerHTML = '<div style="font-size:.75rem;color:var(--text2);margin-bottom:8px;">' +
+        '\ud83e\udd16 DeepSeek AI 分析 | ' + (aiData.tokensUsed || '?') + ' tokens | 基于' + newsCount + '条最新资讯 | ' + new Date().toLocaleTimeString('zh-CN') +
+        '</div>' + formatted;
+    } else {
+      analysisEl.innerHTML = '<div style="color:#dc2626;padding:12px;">\u26a0\ufe0f AI分析失败：' + (aiData.error || '未知错误') + '</div>';
+    }
+  } catch(e) {
+    console.error('AI stock news analysis failed', e);
+    analysisEl.innerHTML = '<div style="color:#dc2626;padding:12px;">\u274c 分析请求失败：' + e.message + '</div>';
+  }
 }
 
 async function callDeepSeek(prompt) {
@@ -2018,10 +2520,199 @@ async function loadAIResult() {
   }
 }
 
+// ===== 新闻面板 =====
+
+async function checkServerHealth() {
+  try {
+    const resp = await fetch(`${NEWS_BACKEND_URL}/api/health`, { signal: AbortSignal.timeout(3000) });
+    const data = await resp.json();
+    newsServerOnline = data.status === 'ok';
+  } catch(e) {
+    newsServerOnline = false;
+  }
+  updateServerBadge();
+}
+
+function updateServerBadge() {
+  const badge = document.getElementById('newsServerBadge');
+  if (!badge) return;
+  if (newsServerOnline) {
+    badge.textContent = '🟢 服务在线';
+    badge.className = 'news-server-badge online';
+    badge.title = '资讯服务运行中 (localhost:8765)';
+  } else {
+    badge.textContent = '🔌 服务离线';
+    badge.className = 'news-server-badge offline';
+    badge.title = '请运行 python server.py 启动资讯服务';
+  }
+}
+
+async function openNewsPanel(code, name) {
+  newsCurrentCode = code;
+  newsCurrentName = name || code;
+  document.getElementById('newsStockName').textContent = `${newsCurrentName} (${code})`;
+  document.getElementById('newsPanel').style.display = 'block';
+  document.getElementById('newsAnalysisSection').innerHTML = '';
+
+  await checkServerHealth();
+  if (newsServerOnline) {
+    await fetchNews(code, name);
+    // 如果开启了自动分析
+    const autoAnalyze = document.getElementById('newsAutoAnalyze');
+    if (autoAnalyze && autoAnalyze.checked) {
+      // 延迟一下让新闻先渲染
+      setTimeout(() => startNewsAnalysis(), 500);
+    }
+  }
+  document.getElementById('newsPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeNewsPanel() {
+  document.getElementById('newsPanel').style.display = 'none';
+  newsCurrentCode = '';
+  newsCurrentName = '';
+  newsAllItems = [];
+}
+
+async function fetchNews(code, name) {
+  const listEl = document.getElementById('newsList');
+  listEl.innerHTML = '<div class="news-loading">⏳ 正在从多源获取最新资讯...</div>';
+
+  try {
+    const resp = await fetch(`${NEWS_BACKEND_URL}/api/news/${code}?name=${encodeURIComponent(name)}&limit=30`,
+      { signal: AbortSignal.timeout(25000) });
+    const data = await resp.json();
+
+    if (!data.news || data.news.length === 0) {
+      listEl.innerHTML = '<div class="news-empty"><div class="icon">📭</div><p>暂无相关新闻</p><p style="font-size:.78rem;">该股票近期没有新的公告或新闻</p></div>';
+      return;
+    }
+
+    newsAllItems = data.news;
+    renderNewsList(data.news);
+  } catch(e) {
+    console.error('获取新闻失败', e);
+    listEl.innerHTML = `<div class="news-empty"><div class="icon">⚠️</div><p>获取新闻失败</p><p style="font-size:.78rem;">${e.message}</p><p style="font-size:.78rem;">请确认已启动资讯服务 (python server.py)</p></div>`;
+  }
+}
+
+function renderNewsList(newsItems) {
+  const listEl = document.getElementById('newsList');
+  if (!newsItems || newsItems.length === 0) {
+    listEl.innerHTML = '<div class="news-empty">暂无新闻</div>';
+    return;
+  }
+
+  let html = `<div style="font-size:.78rem;color:var(--text2);margin-bottom:8px;">共 ${newsItems.length} 条（来自多源聚合）</div>`;
+  for (const item of newsItems) {
+    const src = item.source || '';
+    const srcClass = {
+      '东方财富': 'tag-eastmoney',
+      '巨潮资讯': 'tag-cninfo',
+      '新浪财经': 'tag-sina',
+      '百度新闻': 'tag-baidu',
+    }[src] || '';
+    const typeLabel = {
+      'news': '新闻',
+      'announcement': '公告',
+      'policy': '政策',
+      'report': '研报',
+    }[item.type] || '资讯';
+    const icon = item.sourceIcon || '📄';
+    const title = item.title || '';
+    const summary = (item.summary && item.summary !== item.title) ? item.summary : '';
+    const timeStr = item.time || '';
+    const url = item.url || '#';
+
+    html += `
+    <div class="news-item" data-source="${src}">
+      <div class="news-item-left">
+        <span class="news-source-tag ${srcClass}">${icon} ${src}</span>
+        <span class="news-type-tag">${typeLabel}</span>
+      </div>
+      <div class="news-item-body">
+        <a class="news-item-title" href="${url}" target="_blank" rel="noopener">${title}</a>
+        ${summary ? `<div class="news-item-summary">${summary}</div>` : ''}
+      </div>
+      <div class="news-item-time">${timeStr}</div>
+    </div>`;
+  }
+
+  listEl.innerHTML = html;
+}
+
+function filterNewsBySource() {
+  if (!newsAllItems.length) return;
+  const checkboxes = document.querySelectorAll('.news-source-filter input[type="checkbox"]');
+  const enabledSources = new Set();
+  checkboxes.forEach(cb => {
+    if (cb.checked) enabledSources.add(cb.getAttribute('data-source'));
+  });
+
+  const filtered = newsAllItems.filter(item => enabledSources.has(item.source));
+  renderNewsList(filtered);
+}
+
+async function startNewsAnalysis() {
+  if (!newsCurrentCode) return;
+
+  const sectionEl = document.getElementById('newsAnalysisSection');
+  const btnEl = document.getElementById('newsAnalyzeBtn');
+
+  sectionEl.innerHTML = '<div class="news-loading">🤖 正在调用 DeepSeek 分析新闻...</div>';
+  btnEl.disabled = true;
+  btnEl.textContent = '⏳ 分析中...';
+
+  try {
+    const resp = await fetch(
+      `${NEWS_BACKEND_URL}/api/ai/analyze/${newsCurrentCode}?name=${encodeURIComponent(newsCurrentName)}&mode=full`,
+      { signal: AbortSignal.timeout(130000) }
+    );
+    const data = await resp.json();
+
+    if (data.success && data.analysis) {
+      // 格式化分析结果为 HTML
+      let formatted = data.analysis
+        .replace(/##\s*([^\n]+)/g, '<h2>$1</h2>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+
+      formatted = '<p>' + formatted + '</p>';
+      // 修复空段落
+      formatted = formatted.replace(/<p><\/p>/g, '');
+
+      sectionEl.innerHTML = `
+        <div class="news-analyze-section">
+          <div style="font-size:.75rem;color:var(--text2);margin-bottom:8px;">
+            🤖 DeepSeek AI 分析 | ${data.tokensUsed || '?'} tokens | ${new Date().toLocaleTimeString('zh-CN')}
+          </div>
+          ${formatted}
+        </div>`;
+    } else {
+      sectionEl.innerHTML = `<div class="news-empty"><div class="icon">⚠️</div><p>AI 分析失败</p><p style="font-size:.78rem;">${data.error || '未知错误'}</p></div>`;
+    }
+  } catch(e) {
+    console.error('AI分析失败', e);
+    sectionEl.innerHTML = `<div class="news-empty"><div class="icon">❌</div><p>AI 分析请求失败</p><p style="font-size:.78rem;">${e.message}</p></div>`;
+  } finally {
+    btnEl.disabled = false;
+    btnEl.textContent = '🤖 AI 分析';
+  }
+}
+
+function refreshNews() {
+  if (newsCurrentCode) {
+    fetchNews(newsCurrentCode, newsCurrentName);
+    document.getElementById('newsAnalysisSection').innerHTML = '';
+  }
+}
+
 // ===== 启动 =====
 console.log('📊 股票持仓管家 · 多用户版已就绪');
 console.log('  GitHub 仓库:', GITHUB_REPO);
 console.log('  数据存储: GitHub Contents API');
+console.log('  资讯服务: ' + NEWS_BACKEND_URL);
 console.log('  F5 = 刷新行情 | Ctrl+Enter = 添加持仓');
 </script>
 </body>
