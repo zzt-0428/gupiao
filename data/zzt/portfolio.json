@@ -7,6 +7,14 @@
       "costPrice": 20,
       "shares": 100,
       "createdAt": 1784553209262
+    },
+    {
+      "id": "mrui519auiiri5",
+      "code": "600667",
+      "name": "太极实业",
+      "costPrice": 100,
+      "shares": 10,
+      "createdAt": 1784629186462
     }
   ],
   "snapshots": [
