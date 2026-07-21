@@ -1,2 +1,4 @@
 .claude/
 持仓数据.json
+__pycache__/
+*.pyc
